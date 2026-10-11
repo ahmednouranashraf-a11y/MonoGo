@@ -192,7 +192,7 @@ function Shell() {
         {renderPage()}
       </main>
 
-      <QuickBar />
+      <QuickBar page={page} onGo={go} />
 
       {ticketOpen && planner.route && (
         <TicketModal
