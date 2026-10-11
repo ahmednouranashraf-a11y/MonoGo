@@ -298,3 +298,20 @@
     gap: 8px;
   }
 }
+
+
+
+
+html, body {
+  overflow-x: clip;
+}
+
+.app-shell {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+.news-ticker {
+  overflow: hidden;
+  max-width: 100%;
+}
