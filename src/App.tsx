@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import NewsTicker from './components/NewsTicker';
 import Topbar from './components/Topbar';
 import TicketModal from './components/TicketModal';
+import QuickBar from './components/QuickBar';
 import { usePlanner } from './hooks/usePlanner';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
 import { protectedPages, type Page } from './navigation';
@@ -18,6 +19,7 @@ import StationsPage from './pages/StationsPage';
 import SupportPage from './pages/SupportPage';
 import VerificationPage from './pages/VerificationPage';
 import VerifyScreen from './pages/VerifyScreen';
+
 
 const CLOCK_TICK_MS = 30_000;
 const validPages: Page[] = ['home', 'map', 'stations', 'fares', 'mytickets', 'gate', 'dashboard', 'verification', 'admin', 'auth', 'support'];
