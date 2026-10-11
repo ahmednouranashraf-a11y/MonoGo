@@ -824,3 +824,113 @@ html[data-theme='dark'] .qr-img {
   background: #ffffff;
 }
 
+
+/* =====================================================
+   Dark mode, part 2: analytics, fares, stations, tickets,
+   modal, auth, dashboard, support, complaints inbox
+   Paste at the END of theme.css (after part 1)
+   ===================================================== */
+
+/* analytics, support and complaints inbox read var(--card), which was never defined */
+html[data-theme='dark'] {
+  --card: #161a3b;
+}
+
+/* cards with a hard-coded white background */
+html[data-theme='dark'] .fare-card,
+html[data-theme='dark'] .wallet-card,
+html[data-theme='dark'] .stat-card,
+html[data-theme='dark'] .modal {
+  background: var(--surface);
+}
+
+html[data-theme='dark'] .stat-card,
+html[data-theme='dark'] .ticket-preview {
+  border-color: var(--line);
+}
+
+/* inner controls and light-gray boxes */
+html[data-theme='dark'] .pay-option:not(.active),
+html[data-theme='dark'] .modal-route,
+html[data-theme='dark'] .modal-close,
+html[data-theme='dark'] .outline-button {
+  background: #1d2250;
+}
+
+html[data-theme='dark'] .pay-option,
+html[data-theme='dark'] .outline-button {
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+html[data-theme='dark'] .modal-close {
+  color: var(--muted);
+}
+
+html[data-theme='dark'] .gate-card .outline-button {
+  background: transparent;
+  color: #ffffff;
+  border-color: #ffffff80;
+}
+
+html[data-theme='dark'] .modal-icon,
+html[data-theme='dark'] .auth-note {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+html[data-theme='dark'] .interchange-label.planned {
+  background: #1d2250;
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+html[data-theme='dark'] .status-pill.used,
+html[data-theme='dark'] .status-pill.expired {
+  background: #3a1f1c;
+  color: #ff9a8a;
+}
+
+/* divider lines */
+html[data-theme='dark'] .network-branch + .network-branch,
+html[data-theme='dark'] .fare-card-bottom,
+html[data-theme='dark'] .gate-list li,
+html[data-theme='dark'] .data-table th,
+html[data-theme='dark'] .data-table td,
+html[data-theme='dark'] .ticket-bottom {
+  border-color: var(--line);
+}
+
+/* text that was a dark gray or navy */
+html[data-theme='dark'] .network-branch h3,
+html[data-theme='dark'] .fare-info p,
+html[data-theme='dark'] .map-legend {
+  color: var(--muted);
+}
+
+html[data-theme='dark'] .modal-price strong {
+  color: var(--ink);
+}
+
+html[data-theme='dark'] .ticket-bottom strong,
+html[data-theme='dark'] .auth-links button {
+  color: var(--brand);
+}
+
+/* analytics: active segment is white text on blue, status colours need to be lighter */
+html[data-theme='dark'] .an-seg button.active {
+  background: #2832a4;
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .an-delta.up,
+html[data-theme='dark'] .ci-saved {
+  color: #4cd08a;
+}
+
+html[data-theme='dark'] .an-delta.down,
+html[data-theme='dark'] .sp-error,
+html[data-theme='dark'] .sub-checkout-error {
+  color: #ff8a8a;
+}
+
