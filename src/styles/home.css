@@ -916,13 +916,13 @@ html[dir="ltr"] .news-track {
 
 
 
-
 /* =======================================
-   Hero video slider (replaces the old .hero)
+   Hero video slider (full width, above the page)
    Paste this at the END of home.css
+   (if you pasted the earlier version, replace it)
    ======================================= */
 .hs {
-  --hs-height: clamp(340px, 52vh, 520px);
+  --hs-height: clamp(380px, 64vh, 680px);
   --hs-accent: #ffffff; /* progress fill colour */
   --hs-track: rgba(255, 255, 255, 0.4); /* inactive rectangle colour */
   --hs-dot-w: 28px;
@@ -933,9 +933,8 @@ html[dir="ltr"] .news-track {
   width: 100%;
   height: var(--hs-height);
   overflow: hidden;
-  border-radius: 19px;
+  border-radius: 0;
   background: var(--brand-deep);
-  box-shadow: 0 10px 28px #12203d17;
   isolation: isolate;
 }
 
