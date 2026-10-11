@@ -934,3 +934,25 @@ html[data-theme='dark'] .sub-checkout-error {
   color: #ff8a8a;
 }
 
+/* =====================================================
+   Quick bar, part 2: support button next to the theme toggle
+   Paste at the END of theme.css
+   ===================================================== */
+
+.quickbar-item + .quickbar-item {
+  border-top: 1px solid #ffffff1f;
+}
+
+.quickbar-item.active {
+  background: #ffffff26;
+  color: var(--accent);
+}
+
+/* phones: two buttons stacked in a small round-ended pill */
+@media (max-width: 768px) {
+  .quickbar {
+    height: auto;
+    border-radius: 22px;
+  }
+}
+
