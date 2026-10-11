@@ -608,3 +608,219 @@
     overflow-x: auto;
   }
 }
+
+
+/* =====================================================
+   Quick access bar (dark / light toggle)
+   Paste at the END of theme.css
+   ===================================================== */
+
+.quickbar {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  width: 46px;
+  padding: 6px 0;
+  background: var(--brand-deep);
+  border-radius: 0 12px 12px 0;
+  box-shadow: 0 6px 20px #12163a33;
+}
+
+.quickbar-item {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0 10px 10px 0;
+  color: #ffffff;
+}
+
+.quickbar-item:hover {
+  background: #ffffff1f;
+}
+
+.quickbar-item:focus-visible {
+  outline-color: var(--accent);
+  outline-offset: -3px;
+}
+
+.quickbar-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.quickbar-label {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #2832a4;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  border-radius: 0 10px 10px 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+
+.quickbar-item:hover .quickbar-label,
+.quickbar-item:focus-visible .quickbar-label {
+  opacity: 1;
+  transform: none;
+}
+
+/* phones: a small round button in the corner instead of a side bar */
+@media (max-width: 768px) {
+  .quickbar {
+    top: auto;
+    bottom: 16px;
+    left: 14px;
+    transform: none;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .quickbar-item {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+  }
+
+  .quickbar-label {
+    display: none;
+  }
+}
+
+
+/* =====================================================
+   Dark mode
+   ===================================================== */
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #e9ebfa;
+  --paper: #0d1026;
+  --brand: #8c9bff;
+  --brand-soft: #232a66;
+  --surface: #161a3b;
+  --line: #2a306b;
+  --muted: #9aa3cf;
+}
+
+/* surfaces that had a hard-coded white background */
+html[data-theme='dark'] .header-main,
+html[data-theme='dark'] .account-dropdown,
+html[data-theme='dark'] .station-dropdown,
+html[data-theme='dark'] .quick-card,
+html[data-theme='dark'] .date-chip,
+html[data-theme='dark'] .swap-button {
+  background: var(--surface);
+}
+
+html[data-theme='dark'] .account-dropdown,
+html[data-theme='dark'] .station-dropdown,
+html[data-theme='dark'] .quick-card,
+html[data-theme='dark'] .date-chip,
+html[data-theme='dark'] .swap-button {
+  border-color: var(--line);
+}
+
+/* inner fields and light-gray chips */
+html[data-theme='dark'] .station-trigger,
+html[data-theme='dark'] .station-search,
+html[data-theme='dark'] .card-step,
+html[data-theme='dark'] .result-stats,
+html[data-theme='dark'] .terminal-label,
+html[data-theme='dark'] .quick-icon.lavender {
+  background: #1d2250;
+  border-color: var(--line);
+}
+
+html[data-theme='dark'] .trip-meter {
+  background: #232a66;
+}
+
+html[data-theme='dark'] .quick-icon.peach {
+  background: #3a3508;
+  color: var(--accent);
+}
+
+/* text that was a dark gray on a light surface */
+html[data-theme='dark'] .station-trigger,
+html[data-theme='dark'] .station-search input,
+html[data-theme='dark'] .station-option,
+html[data-theme='dark'] .quick-icon.lavender {
+  color: var(--ink);
+}
+
+html[data-theme='dark'] .field-label,
+html[data-theme='dark'] .date-chip,
+html[data-theme='dark'] .terminal-label {
+  color: var(--muted);
+}
+
+html[data-theme='dark'] .fare-value {
+  color: var(--brand);
+}
+
+/* solid blue fills keep the original blue (white text on them) */
+html[data-theme='dark'] .hero {
+  background: linear-gradient(135deg, #2832a4 0%, #1b2277 100%);
+}
+
+html[data-theme='dark'] .network-aside,
+html[data-theme='dark'] .ticket-cta,
+html[data-theme='dark'] .gate-card:not(.ok):not(.no) {
+  background: linear-gradient(160deg, #2832a4, #1b2277);
+}
+
+html[data-theme='dark'] .dark-button,
+html[data-theme='dark'] .site-brand-mark {
+  background: #2832a4;
+}
+
+html[data-theme='dark'] .dark-button:hover:not(:disabled) {
+  background: #3441c4;
+}
+
+html[data-theme='dark'] .price-buy:hover,
+html[data-theme='dark'] .price-buy.selected,
+html[data-theme='dark'] .lang-toggle:hover {
+  background: #2832a4;
+  color: #ffffff;
+}
+
+/* form fields everywhere */
+html[data-theme='dark'] input,
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea {
+  background: #1d2250;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+html[data-theme='dark'] ::placeholder {
+  color: var(--muted);
+}
+
+/* QR codes must stay on white or the gate scanner can't read them */
+html[data-theme='dark'] .qr-img {
+  background: #ffffff;
+}
+
