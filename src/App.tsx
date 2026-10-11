@@ -20,7 +20,6 @@ import SupportPage from './pages/SupportPage';
 import VerificationPage from './pages/VerificationPage';
 import VerifyScreen from './pages/VerifyScreen';
 
-
 const CLOCK_TICK_MS = 30_000;
 const validPages: Page[] = ['home', 'map', 'stations', 'fares', 'mytickets', 'gate', 'dashboard', 'verification', 'admin', 'auth', 'support'];
 const translatedPages: Page[] = ['home', 'map', 'stations', 'fares', 'mytickets', 'gate', 'dashboard', 'verification', 'admin', 'auth', 'support'];
@@ -192,6 +191,8 @@ function Shell() {
       <main className="main-content" dir={translatedPages.includes(page) ? dir : 'rtl'}>
         {renderPage()}
       </main>
+
+      <QuickBar />
 
       {ticketOpen && planner.route && (
         <TicketModal
