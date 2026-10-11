@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { KeyboardEvent, TouchEvent } from 'react';
 import { brand } from '../config/brand';
 import Icon from '../components/Icon';
-import MonorailScene from '../components/MonorailScene';
 import RouteResult from '../components/RouteResult';
 import StationPicker from '../components/StationPicker';
 import { lineMeta } from '../data/network';
@@ -11,11 +12,104 @@ import type { Page } from '../navigation';
 
 type Props = { planner: Planner; now: Date; onGo: (page: Page) => void; onBook: () => void };
 
+/* ---------- Hero video slider (the 6s flag video is first) ---------- */
+type HeroSlide = {
+  src: string;
+  poster: string;
+  position: string; // object-position when a portrait video gets cropped
+  maxDuration?: number; // move on after N seconds even if the video is longer
+};
+
+const base = import.meta.env.BASE_URL;
+
+const HERO_SLIDES: HeroSlide[] = [
+  { src: `${base}videos/hero-1.mp4`, poster: `${base}videos/hero-1.jpg`, position: '50% 50%' },
+  { src: `${base}videos/hero-2.mp4`, poster: `${base}videos/hero-2.jpg`, position: '50% 50%', maxDuration: 12 },
+  { src: `${base}videos/hero-3.mp4`, poster: `${base}videos/hero-3.jpg`, position: '50% 62%' },
+  { src: `${base}videos/hero-4.mp4`, poster: `${base}videos/hero-4.jpg`, position: '50% 60%' },
+];
+
+const SWIPE_THRESHOLD = 50;
+const isRtl = () => document.documentElement.dir === 'rtl';
+
 export default function HomePage({ planner, now, onGo, onBook }: Props) {
   const { t } = useLanguage();
   const { from, to, route, error } = planner;
   const line = lineMeta['east-nile'];
   const count = num(line.stationCount);
+
+  /* ---------- slider logic ---------- */
+  const [slide, setSlide] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const fillRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const touchStartX = useRef<number | null>(null);
+
+  const slideCount = HERO_SLIDES.length;
+  const nextSlide = useCallback(() => setSlide((i) => (i + 1) % slideCount), [slideCount]);
+  const prevSlide = useCallback(() => setSlide((i) => (i - 1 + slideCount) % slideCount), [slideCount]);
+
+  // play only the active video, restart it from 0 when it becomes active
+  useEffect(() => {
+    videoRefs.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === slide) {
+        v.currentTime = 0;
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
+    fillRefs.current.forEach((f) => {
+      if (f) f.style.transform = 'scaleX(0)';
+    });
+  }, [slide]);
+
+  // pause / resume on hover
+  useEffect(() => {
+    const v = videoRefs.current[slide];
+    if (!v) return;
+    if (hovered) v.pause();
+    else v.play().catch(() => {});
+  }, [hovered, slide]);
+
+  // progress bar follows the real video time, and moves on at maxDuration
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const v = videoRefs.current[slide];
+      const fill = fillRefs.current[slide];
+      if (v && fill && v.duration) {
+        const limit = Math.min(v.duration, HERO_SLIDES[slide].maxDuration ?? Infinity);
+        const p = Math.min(v.currentTime / limit, 1);
+        fill.style.transform = `scaleX(${p})`;
+        if (p >= 1) {
+          nextSlide();
+          return;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [slide, nextSlide]);
+
+  const onTouchStart = (e: TouchEvent<HTMLElement>) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: TouchEvent<HTMLElement>) => {
+    if (touchStartX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+    const forward = isRtl() ? dx > 0 : dx < 0;
+    if (forward) nextSlide();
+    else prevSlide();
+  };
+  const onSliderKey = (e: KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'ArrowRight') (isRtl() ? prevSlide : nextSlide)();
+    if (e.key === 'ArrowLeft') (isRtl() ? nextSlide : prevSlide)();
+  };
 
   return (
     <div className="dashboard">
@@ -33,26 +127,67 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
         </div>
       </div>
 
-      <section className="hero">
-        <div className="hero-scene">
-          <MonorailScene />
+      <section
+        className="hs"
+        aria-roledescription="carousel"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onKeyDown={onSliderKey}
+      >
+        <div className="hs__slides">
+          {HERO_SLIDES.map((s, i) => (
+            <video
+              key={s.src}
+              ref={(el) => {
+                videoRefs.current[i] = el;
+              }}
+              className={`hs__video${i === slide ? ' is-active' : ''}`}
+              style={{ objectPosition: s.position }}
+              src={s.src}
+              poster={s.poster}
+              muted
+              playsInline
+              preload={i === 0 ? 'auto' : 'metadata'}
+              autoPlay={i === 0}
+              aria-hidden={i !== slide}
+              onEnded={i === slide ? nextSlide : undefined}
+              onError={i === slide ? nextSlide : undefined}
+            />
+          ))}
         </div>
-        <div className="hero-pattern" />
-        <div className="hero-copy">
-          <span className="hero-kicker">
-            <span className="hero-kicker-dot" /> {t('home.heroKicker')}
-          </span>
-          <h2>
-            {t('home.heroLine1')}
-            <br />
-            {t('home.heroLine2')} <em>{t('home.heroEm')}</em>
-          </h2>
-          <p>{t('home.heroText', { n: count })}</p>
-          <button
-            onClick={() => document.getElementById('planner')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-          >
-            {t('home.heroCta')} <Icon name="arrow" size={18} />
-          </button>
+        <div className="hs__shade" />
+
+        <button className="hs__arrow hs__arrow--prev" onClick={prevSlide} aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
+        </button>
+        <button className="hs__arrow hs__arrow--next" onClick={nextSlide} aria-label="Next slide">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <div className="hs__dots" role="tablist">
+          {HERO_SLIDES.map((_, i) => (
+            <button
+              key={i}
+              role="tab"
+              aria-selected={i === slide}
+              aria-label={`Slide ${i + 1}`}
+              className={`hs__dot${i === slide ? ' is-active' : ''}`}
+              onClick={() => setSlide(i)}
+            >
+              <span
+                className="hs__fill"
+                ref={(el) => {
+                  fillRefs.current[i] = el;
+                }}
+              />
+            </button>
+          ))}
         </div>
       </section>
 
