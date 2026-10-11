@@ -1,0 +1,176 @@
+/* ---- Tweak these to match the MonoGo theme ---- */
+.hs {
+  --hs-height: clamp(420px, 78vh, 760px);
+  --hs-accent: #ffffff;                 /* progress fill colour */
+  --hs-track: rgba(255, 255, 255, 0.4); /* inactive rectangle colour */
+  --hs-dot-w: 28px;
+  --hs-dot-w-active: 72px;
+  --hs-dot-h: 6px;
+
+  position: relative;
+  width: 100%;
+  height: var(--hs-height);
+  overflow: hidden;
+  background: #0b1b3a;
+  isolation: isolate;
+}
+
+/* ---- Videos (cross-fade) ---- */
+.hs__slides {
+  position: absolute;
+  inset: 0;
+}
+
+.hs__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* object-position comes from each slide */
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.hs__video.is-active {
+  opacity: 1;
+  z-index: 1;
+}
+
+/* Soft dark gradient so text / controls stay readable */
+.hs__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0) 40%
+  );
+}
+
+/* Optional overlay content (title, button...) */
+.hs__content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-inline: clamp(24px, 8vw, 120px);
+  color: #fff;
+  pointer-events: none;
+}
+.hs__content > * {
+  pointer-events: auto;
+}
+
+/* ---- Arrows ---- */
+.hs__arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s ease, background 0.25s ease;
+}
+.hs:hover .hs__arrow,
+.hs__arrow:focus-visible {
+  opacity: 1;
+}
+.hs__arrow:hover {
+  background: rgba(0, 0, 0, 0.55);
+}
+.hs__arrow--prev {
+  inset-inline-start: 16px;
+}
+.hs__arrow--next {
+  inset-inline-end: 16px;
+}
+/* Flip chevrons in RTL so "next" points left */
+html[dir="rtl"] .hs__arrow svg {
+  transform: scaleX(-1);
+}
+
+/* On touch devices there's no hover: keep arrows faintly visible */
+@media (hover: none) {
+  .hs__arrow {
+    opacity: 0.8;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* ---- Rectangle indicators with progress ---- */
+.hs__dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 22px;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.hs__dot {
+  position: relative;
+  width: var(--hs-dot-w);
+  height: var(--hs-dot-h);
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: var(--hs-track);
+  overflow: hidden;
+  cursor: pointer;
+  transition: width 0.35s ease, background 0.35s ease;
+}
+.hs__dot:hover {
+  background: rgba(255, 255, 255, 0.65);
+}
+.hs__dot.is-active {
+  width: var(--hs-dot-w-active);
+}
+.hs__dot:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.hs__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--hs-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+html[dir="rtl"] .hs__fill {
+  transform-origin: right center;
+}
+
+@media (max-width: 600px) {
+  .hs {
+    --hs-height: clamp(360px, 70vh, 560px);
+    --hs-dot-w: 20px;
+    --hs-dot-w-active: 48px;
+  }
+  .hs__dots {
+    bottom: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs__video,
+  .hs__dot,
+  .hs__arrow {
+    transition: none;
+  }
+}
