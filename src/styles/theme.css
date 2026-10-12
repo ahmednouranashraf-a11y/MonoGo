@@ -1150,5 +1150,10 @@ html[data-theme='dark'] .sub-checkout-error {
   }
 }
 
-
+/* mobile: keep the aside as the positioning parent, so its decorative circle stays clipped */
+@media (max-width: 720px) {
+  .network-aside {
+    position: relative;
+  }
+}
 
