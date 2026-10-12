@@ -127,6 +127,10 @@
   position: sticky;
   top: 105px;
   overflow: hidden;
+  /* Keeps the decorative circle (:after) clipped inside the card even when
+     responsive.css switches the card to position: static on phones. Without it
+     the circle escapes and pushes the whole page 80px sideways in Arabic (RTL). */
+  contain: paint;
 }
 
 .network-aside:after {
