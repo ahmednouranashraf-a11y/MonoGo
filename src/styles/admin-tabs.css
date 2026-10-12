@@ -1,0 +1,52 @@
+/* Admin page sections (tabs). Uses the site's variables when they exist. */
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 6px;
+  background: var(--card, #fff);
+  border: 1px solid var(--line, #dfe3f1);
+  border-radius: 16px;
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+}
+.admin-tabs button {
+  flex: 1 1 auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.admin-tabs button:hover {
+  background: var(--brand-soft, #e8ebfb);
+}
+.admin-tabs button.active {
+  background: var(--brand, #2430a0);
+  color: #fff;
+}
+.admin-tab-badge {
+  background: var(--accent, #f6d800);
+  color: #14183a;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0 8px;
+}
+@media (max-width: 480px) {
+  .admin-tabs button {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+}
