@@ -1,0 +1,211 @@
+/* Analytics v2: filters, the zigzag line chart, sparklines. Builds on analytics.css. */
+
+/* ---------- filters ---------- */
+.an-filter-btn {
+  border: 1px solid var(--line, #dfe3f1);
+  background: var(--card, #fff);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 7px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.an-filter-btn.open {
+  background: var(--brand-soft, #e8ebfb);
+  border-color: var(--brand, #2430a0);
+}
+.an-filter-count {
+  background: var(--accent, #f6d800);
+  color: #14183a;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0 8px;
+}
+.an-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+  align-items: end;
+  padding: 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line, #dfe3f1);
+  border-radius: 16px;
+  background: var(--card, #fff);
+}
+.an-filters label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.an-filters label span {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.an-filters select {
+  width: 100%;
+  min-width: 0;
+}
+.an-reset {
+  justify-self: start;
+}
+.an-seg button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- live indicator ---------- */
+.an-dot-live {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #1c8a55;
+  flex: none;
+  animation: an-pulse 1.8s ease-in-out infinite;
+}
+.an-dot-live.busy {
+  background: var(--accent, #f6d800);
+}
+
+/* ---------- sparkline under a KPI ---------- */
+.an-spark {
+  width: 100%;
+  height: 28px;
+  margin-top: 4px;
+  display: block;
+}
+.an-spark-line {
+  stroke: var(--brand, #2430a0);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+/* ---------- main zigzag chart ---------- */
+.an-main-chart {
+  margin-bottom: 14px;
+}
+.an-chart-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.an-chart-head h3 {
+  margin: 0 0 2px;
+}
+.an-chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.an-line-wrap {
+  position: relative;
+  direction: ltr; /* time always runs left to right */
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+.an-line-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.an-area-top {
+  stop-color: var(--brand, #2430a0);
+  stop-opacity: 0.28;
+}
+.an-area-bottom {
+  stop-color: var(--brand, #2430a0);
+  stop-opacity: 0.02;
+}
+.an-line-main {
+  stroke: var(--brand, #2430a0);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.an-line-prev {
+  stroke: currentColor;
+  stroke-opacity: 0.45;
+  stroke-width: 1.8;
+  stroke-dasharray: 6 5;
+  stroke-linejoin: round;
+}
+.an-pt {
+  fill: var(--brand, #2430a0);
+  stroke: var(--card, #fff);
+  stroke-width: 1.5;
+}
+.an-pt-peak {
+  fill: var(--accent, #f6d800);
+  stroke: var(--brand, #2430a0);
+  stroke-width: 2;
+}
+.an-pt-hover {
+  fill: var(--brand, #2430a0);
+  stroke: var(--card, #fff);
+  stroke-width: 2.5;
+}
+.an-guide {
+  stroke: currentColor;
+  stroke-opacity: 0.3;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.an-peak-label {
+  font-size: 11px;
+  font-weight: 800;
+  fill: currentColor;
+}
+
+.an-tip {
+  position: absolute;
+  top: 6px;
+  z-index: 3;
+  min-width: 150px;
+  max-width: 260px;
+  padding: 8px 12px;
+  display: grid;
+  gap: 2px;
+  background: var(--card, #fff);
+  border: 1px solid var(--line, #dfe3f1);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(20, 24, 58, 0.18);
+  font-size: 13px;
+  pointer-events: none;
+  text-align: start;
+}
+.an-tip * {
+  unicode-bidi: plaintext;
+}
+.an-tip span {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--brand, #2430a0);
+}
+.an-tip small {
+  opacity: 0.7;
+}
+
+@media (max-width: 480px) {
+  .an-chart-controls {
+    width: 100%;
+  }
+  .an-chart-controls .an-seg {
+    flex: 1 1 auto;
+  }
+  .an-chart-controls .an-seg button {
+    flex: 1 1 auto;
+    padding: 7px 8px;
+  }
+}
