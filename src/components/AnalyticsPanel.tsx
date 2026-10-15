@@ -60,6 +60,19 @@ type Top = {
   scans: { result: string; count: number }[];
 };
 
+/** One line of the live feed. Anonymous on purpose: stations, price and result, never a name. */
+type FeedEvent = {
+  type: 'ticket' | 'subscription' | 'scan';
+  at: string;
+  id: string | null;
+  from: string | null;
+  to: string | null;
+  fare: number | null;
+  passengers: number | null;
+  detail: string | null; // ticket kind, subscription plan, or scan result
+  source: 'real' | 'demo';
+};
+
 type Source = 'all' | 'real' | 'demo';
 type Bucket = 'hour' | 'day' | 'week';
 type Metric = 'revenue' | 'tickets' | 'passengers' | 'subscriptions';
@@ -430,6 +443,112 @@ function RankList({ items, locale, empty }: { items: RankItem[]; locale: string;
   );
 }
 
+const eventKey = (e: FeedEvent) => `${e.type}-${e.id}-${e.at}`;
+
+/** A number that counts up (or down) to its new value instead of jumping. */
+function AnimatedValue({ value, format }: { value: number; format: (n: number) => string }) {
+  const [shown, setShown] = useState(value);
+  const from = useRef(value);
+
+  useEffect(() => {
+    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || from.current === value) {
+      from.current = value;
+      setShown(value);
+      return;
+    }
+    const start = performance.now();
+    const a = from.current;
+    const duration = 700;
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const v = t >= 1 ? value : a + (value - a) * eased;
+      from.current = v;
+      setShown(v);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+
+  return <strong>{format(shown)}</strong>;
+}
+
+/** The newest events, sliding in as they happen. */
+function LiveFeed({
+  events,
+  fresh,
+  isAr,
+  locale,
+  station,
+  money,
+  plan,
+  kind,
+  scan,
+}: {
+  events: FeedEvent[];
+  fresh: Set<string>;
+  isAr: boolean;
+  locale: string;
+  station: (name: string) => string;
+  money: (n: number) => string;
+  plan: (key: string) => string;
+  kind: (key: string) => string;
+  scan: (key: string) => string;
+}) {
+  if (events.length === 0) return <p className="an-empty">{isAr ? 'مفيش أحداث لسه.' : 'No events yet.'}</p>;
+
+  const ago = (iso: string) => {
+    const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (s < 5) return isAr ? 'الآن' : 'now';
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+    if (s < 60) return rtf.format(-s, 'second');
+    if (s < 3600) return rtf.format(-Math.round(s / 60), 'minute');
+    if (s < 86400) return rtf.format(-Math.round(s / 3600), 'hour');
+    return rtf.format(-Math.round(s / 86400), 'day');
+  };
+
+  return (
+    <ul className="an-feed">
+      {events.map((e) => {
+        const key = eventKey(e);
+        const rejected = e.type === 'scan' && e.detail !== 'ok';
+        const tone = e.type === 'scan' ? (rejected ? 'bad' : 'good') : e.type === 'subscription' ? 'sub' : 'ticket';
+        return (
+          <li key={key} className={`an-feed-item ${tone} ${fresh.has(key) ? 'fresh' : ''}`}>
+            <i className="an-feed-dot" aria-hidden="true" />
+            <div className="an-feed-body">
+              <div className="an-feed-title">
+                {e.type === 'ticket' && (isAr ? 'تذكرة جديدة' : 'New ticket')}
+                {e.type === 'subscription' && (isAr ? 'اشتراك جديد' : 'New subscription')}
+                {e.type === 'scan' && (isAr ? `مسح عند البوابة: ${scan(e.detail ?? '')}` : `Gate scan: ${scan(e.detail ?? '')}`)}
+                {e.source === 'demo' && <span className="an-feed-tag">{isAr ? 'محاكاة' : 'demo'}</span>}
+                {e.type === 'ticket' && e.detail === 'half' && <span className="an-feed-tag half">{kind('half')}</span>}
+              </div>
+              {e.type === 'ticket' && e.from && e.to && (
+                <div className="an-feed-sub">
+                  {station(e.from)} {isAr ? '←' : '→'} {station(e.to)} · {num(e.passengers ?? 1, locale)} {isAr ? 'راكب' : 'pax'} ·{' '}
+                  {money(e.fare ?? 0)}
+                </div>
+              )}
+              {e.type === 'subscription' && (
+                <div className="an-feed-sub">
+                  {plan(e.detail ?? '')} · {money(e.fare ?? 0)}
+                </div>
+              )}
+            </div>
+            <time className="an-feed-time" dateTime={e.at}>
+              {ago(e.at)}
+            </time>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 // ---------- The panel ----------
 
 export default function AnalyticsPanel() {
@@ -450,6 +569,12 @@ export default function AnalyticsPanel() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [feed, setFeed] = useState<FeedEvent[]>([]);
+  const [freshKeys, setFreshKeys] = useState<Set<string>>(new Set());
+  const feedKeys = useRef<Set<string> | null>(null);
+  const [liveStatus, setLiveStatus] = useState<'connecting' | 'live' | 'offline'>('connecting');
+  const [flash, setFlash] = useState(false);
+  const [, setTick] = useState(0);
 
   // Hourly points only make sense for up to 7 days; the database falls back to days beyond that.
   const bucket: Bucket = days > 7 && bucketPref === 'hour' ? 'day' : bucketPref;
@@ -462,10 +587,11 @@ export default function AnalyticsPanel() {
     }
     setRefreshing(true);
     const args = filterArgs(filters);
-    const [a, b, c] = await Promise.all([
+    const [a, b, c, d] = await Promise.all([
       supabase.rpc('analytics_overview', { p_days: days, ...args }),
       supabase.rpc('analytics_series', { p_days: days, p_bucket: bucket, ...args }),
       supabase.rpc('analytics_top', { p_days: days, ...args }),
+      supabase.rpc('analytics_recent', { p_limit: 12, p_source: args.p_source }),
     ]);
     setRefreshing(false);
     if (a.error || b.error || c.error) {
@@ -477,6 +603,17 @@ export default function AnalyticsPanel() {
     setOverview(a.data as Overview);
     setSeries(b.data as Series);
     setTop(c.data as Top);
+    // The feed is a bonus: if analytics_live.sql was not run yet, the rest still works.
+    if (d.error) {
+      console.warn('analytics_recent failed', d.error.message);
+    } else {
+      const events = (d.data as FeedEvent[] | null) ?? [];
+      const keys = new Set(events.map(eventKey));
+      const known = feedKeys.current;
+      setFreshKeys(known ? new Set([...keys].filter((k) => !known.has(k))) : new Set());
+      feedKeys.current = keys;
+      setFeed(events);
+    }
     setFailed(false);
     setUpdatedAt(new Date());
     setLoading(false);
@@ -494,10 +631,44 @@ export default function AnalyticsPanel() {
     };
   }, [load]);
 
+  // Always call the latest load() from the realtime handler, whatever filters are active right now.
+  const loadRef = useRef(load);
+  loadRef.current = load;
+
+  // Realtime: the moment a ticket, subscription or gate scan is saved, reload and flash the cards.
+  useEffect(() => {
+    if (!supabase) return;
+    let timer: number | undefined;
+    const bump = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        void loadRef.current();
+        setFlash(true);
+        window.setTimeout(() => setFlash(false), 900);
+      }, 350);
+    };
+    const channel = supabase
+      .channel('admin-analytics')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tickets' }, bump)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'subscriptions' }, bump)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_scans' }, bump)
+      .subscribe((status: string) => setLiveStatus(status === 'SUBSCRIBED' ? 'live' : 'offline'));
+    return () => {
+      window.clearTimeout(timer);
+      void supabase?.removeChannel(channel);
+    };
+  }, []);
+
+  // Keeps "5 seconds ago" honest.
+  useEffect(() => {
+    const id = window.setInterval(() => setTick((t) => t + 1), 10_000);
+    return () => window.clearInterval(id);
+  }, []);
+
   const setFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
 
   const egp = tx('جنيه', 'EGP');
-  const money = (n: number) => `${num(n, locale)} ${egp}`;
+  const money = (n: number) => `${num(Math.round(n), locale)} ${egp}`;
   const station = (name: string) => getStationName(name, lang);
   const percent = (n: number) => `${num(Number(n.toFixed(1)), locale)}%`;
 
@@ -647,34 +818,37 @@ export default function AnalyticsPanel() {
 
   const sparkOf = (get: (p: SeriesPoint) => number) => pts.map(get);
 
+  const int = (n: number) => num(Math.round(n), locale);
+  const one = (n: number) => num(Number(n.toFixed(1)), locale);
+
   type Kpi = {
     label: string;
-    value: string;
     cur: number;
     prev: number;
+    fmt: (n: number) => string;
     mode: 'rel' | 'pp';
     spark?: number[];
   };
 
   const kpis: Kpi[] = [
-    { label: tx('إجمالي الإيرادات', 'Total revenue'), value: money(cur.revenue), cur: cur.revenue, prev: prev.revenue, mode: 'rel', spark: sparkOf((p) => p.revenue) },
-    { label: tx('إيراد التذاكر', 'Ticket revenue'), value: money(cur.ticket_revenue), cur: cur.ticket_revenue, prev: prev.ticket_revenue, mode: 'rel', spark: sparkOf((p) => p.ticket_revenue) },
-    { label: tx('إيراد الاشتراكات', 'Subscription revenue'), value: money(cur.subscription_revenue), cur: cur.subscription_revenue, prev: prev.subscription_revenue, mode: 'rel', spark: sparkOf((p) => p.subscription_revenue) },
-    { label: tx('التذاكر المباعة', 'Tickets sold'), value: num(cur.tickets, locale), cur: cur.tickets, prev: prev.tickets, mode: 'rel', spark: sparkOf((p) => p.tickets) },
-    { label: tx('الركاب', 'Passengers'), value: num(cur.passengers, locale), cur: cur.passengers, prev: prev.passengers, mode: 'rel', spark: sparkOf((p) => p.passengers) },
-    { label: tx('اشتراكات جديدة', 'New subscriptions'), value: num(cur.subscriptions, locale), cur: cur.subscriptions, prev: prev.subscriptions, mode: 'rel', spark: sparkOf((p) => p.subscriptions) },
-    { label: tx('متوسط سعر التذكرة', 'Average ticket'), value: money(cur.avg_fare), cur: cur.avg_fare, prev: prev.avg_fare, mode: 'rel' },
-    { label: tx('متوسط الركاب للتذكرة', 'Passengers per ticket'), value: num(cur.avg_party, locale), cur: cur.avg_party, prev: prev.avg_party, mode: 'rel' },
-    { label: tx('إيراد الراكب الواحد', 'Revenue per passenger'), value: money(cur.revenue_per_passenger), cur: cur.revenue_per_passenger, prev: prev.revenue_per_passenger, mode: 'rel' },
-    { label: tx('متوسط سعر الاشتراك', 'Average subscription'), value: money(cur.avg_sub_price), cur: cur.avg_sub_price, prev: prev.avg_sub_price, mode: 'rel' },
-    { label: tx('مشترون', 'Buyers'), value: num(cur.buyers, locale), cur: cur.buyers, prev: prev.buyers, mode: 'rel' },
-    { label: tx('نسبة اللي رجعوا اشتروا', 'Repeat buyers'), value: percent(pct(cur.repeat_buyers, cur.buyers)), cur: pct(cur.repeat_buyers, cur.buyers), prev: pct(prev.repeat_buyers, prev.buyers), mode: 'pp' },
-    { label: tx('نسبة إتمام الدفع', 'Payment completion'), value: percent(pct(cur.orders_paid, cur.orders_created)), cur: pct(cur.orders_paid, cur.orders_created), prev: pct(prev.orders_paid, prev.orders_created), mode: 'pp' },
-    { label: tx('نسبة الحجز المسبق', 'Advance bookings'), value: percent(pct(cur.advance_tickets, cur.tickets)), cur: pct(cur.advance_tickets, cur.tickets), prev: pct(prev.advance_tickets, prev.tickets), mode: 'pp' },
-    { label: tx('متوسط مدة الحجز المسبق (يوم)', 'Avg advance lead (days)'), value: num(cur.avg_lead_days, locale), cur: cur.avg_lead_days, prev: prev.avg_lead_days, mode: 'rel' },
-    { label: tx('نسبة نصف التذكرة', 'Half-fare share'), value: percent(pct(cur.half_tickets, cur.tickets)), cur: pct(cur.half_tickets, cur.tickets), prev: pct(prev.half_tickets, prev.tickets), mode: 'pp' },
-    { label: tx('نسبة قبول المسح', 'Gate acceptance'), value: percent(pct(cur.scans_ok, cur.scans)), cur: pct(cur.scans_ok, cur.scans), prev: pct(prev.scans_ok, prev.scans), mode: 'pp' },
-    { label: tx('مستخدمون جدد', 'New users'), value: num(cur.new_users, locale), cur: cur.new_users, prev: prev.new_users, mode: 'rel' },
+    { label: tx('إجمالي الإيرادات', 'Total revenue'), cur: cur.revenue, prev: prev.revenue, fmt: money, mode: 'rel', spark: sparkOf((p) => p.revenue) },
+    { label: tx('إيراد التذاكر', 'Ticket revenue'), cur: cur.ticket_revenue, prev: prev.ticket_revenue, fmt: money, mode: 'rel', spark: sparkOf((p) => p.ticket_revenue) },
+    { label: tx('إيراد الاشتراكات', 'Subscription revenue'), cur: cur.subscription_revenue, prev: prev.subscription_revenue, fmt: money, mode: 'rel', spark: sparkOf((p) => p.subscription_revenue) },
+    { label: tx('التذاكر المباعة', 'Tickets sold'), cur: cur.tickets, prev: prev.tickets, fmt: int, mode: 'rel', spark: sparkOf((p) => p.tickets) },
+    { label: tx('الركاب', 'Passengers'), cur: cur.passengers, prev: prev.passengers, fmt: int, mode: 'rel', spark: sparkOf((p) => p.passengers) },
+    { label: tx('اشتراكات جديدة', 'New subscriptions'), cur: cur.subscriptions, prev: prev.subscriptions, fmt: int, mode: 'rel', spark: sparkOf((p) => p.subscriptions) },
+    { label: tx('متوسط سعر التذكرة', 'Average ticket'), cur: cur.avg_fare, prev: prev.avg_fare, fmt: money, mode: 'rel' },
+    { label: tx('متوسط الركاب للتذكرة', 'Passengers per ticket'), cur: cur.avg_party, prev: prev.avg_party, fmt: one, mode: 'rel' },
+    { label: tx('إيراد الراكب الواحد', 'Revenue per passenger'), cur: cur.revenue_per_passenger, prev: prev.revenue_per_passenger, fmt: money, mode: 'rel' },
+    { label: tx('متوسط سعر الاشتراك', 'Average subscription'), cur: cur.avg_sub_price, prev: prev.avg_sub_price, fmt: money, mode: 'rel' },
+    { label: tx('مشترون', 'Buyers'), cur: cur.buyers, prev: prev.buyers, fmt: int, mode: 'rel' },
+    { label: tx('نسبة اللي رجعوا اشتروا', 'Repeat buyers'), cur: pct(cur.repeat_buyers, cur.buyers), prev: pct(prev.repeat_buyers, prev.buyers), fmt: percent, mode: 'pp' },
+    { label: tx('نسبة إتمام الدفع', 'Payment completion'), cur: pct(cur.orders_paid, cur.orders_created), prev: pct(prev.orders_paid, prev.orders_created), fmt: percent, mode: 'pp' },
+    { label: tx('نسبة الحجز المسبق', 'Advance bookings'), cur: pct(cur.advance_tickets, cur.tickets), prev: pct(prev.advance_tickets, prev.tickets), fmt: percent, mode: 'pp' },
+    { label: tx('متوسط مدة الحجز المسبق (يوم)', 'Avg advance lead (days)'), cur: cur.avg_lead_days, prev: prev.avg_lead_days, fmt: one, mode: 'rel' },
+    { label: tx('نسبة نصف التذكرة', 'Half-fare share'), cur: pct(cur.half_tickets, cur.tickets), prev: pct(prev.half_tickets, prev.tickets), fmt: percent, mode: 'pp' },
+    { label: tx('نسبة قبول المسح', 'Gate acceptance'), cur: pct(cur.scans_ok, cur.scans), prev: pct(prev.scans_ok, prev.scans), fmt: percent, mode: 'pp' },
+    { label: tx('مستخدمون جدد', 'New users'), cur: cur.new_users, prev: prev.new_users, fmt: int, mode: 'rel' },
   ];
 
   // ----- main line chart -----
@@ -736,21 +910,28 @@ export default function AnalyticsPanel() {
       {header}
       {filterPanel}
 
-      <div className="an-live">
-        <span className={`an-dot-live ${refreshing ? 'busy' : ''}`} aria-hidden="true" />
+      <div className={`an-live ${liveStatus}`}>
+        <span className={`an-dot-live ${liveStatus === 'live' ? '' : 'off'} ${refreshing ? 'busy' : ''}`} aria-hidden="true" />
         <span>
-          {tx('بيتحدّث تلقائيًا كل ٣٠ ثانية', 'Refreshes automatically every 30 seconds')}
+          {liveStatus === 'live' ? (
+            <b className="an-live-badge">{tx('مباشر', 'LIVE')}</b>
+          ) : (
+            <b className="an-live-badge off">{liveStatus === 'connecting' ? tx('بيتّصل…', 'Connecting…') : tx('تحديث دوري', 'Polling')}</b>
+          )}{' '}
+          {liveStatus === 'live'
+            ? tx('أي حجز جديد بيظهر هنا في نفس اللحظة', 'Every new booking shows up here instantly')
+            : tx('بيتحدّث تلقائيًا كل ٣٠ ثانية', 'Refreshes automatically every 30 seconds')}
           {updatedAt && ` · ${tx('آخر تحديث', 'Last update')} ${updatedAt.toLocaleTimeString(locale, { timeZone: 'Africa/Cairo' })}`}
           {' · '}
           {tx('المقارنة مع نفس الطول من الفترة اللي قبلها', 'Compared with the same stretch of the previous period')}
         </span>
       </div>
 
-      <div className="an-kpis">
+      <div className={`an-kpis ${flash ? 'flash' : ''}`}>
         {kpis.map((k) => (
           <div className="an-kpi" key={k.label}>
             <small>{k.label}</small>
-            <strong>{k.value}</strong>
+            <AnimatedValue value={k.cur} format={k.fmt} />
             <Delta cur={k.cur} prev={k.prev} mode={k.mode} isAr={isAr} locale={locale} />
             {k.spark && <Sparkline values={k.spark} />}
           </div>
@@ -795,6 +976,21 @@ export default function AnalyticsPanel() {
 
       <div className="an-grid-2">
         <div className="an-card">
+          <h3>{tx('الأحداث الحية', 'Live events')}</h3>
+          <LiveFeed
+            events={feed}
+            fresh={freshKeys}
+            isAr={isAr}
+            locale={locale}
+            station={station}
+            money={money}
+            plan={(k) => PLAN_NAMES[k]?.[lang] ?? k}
+            kind={(k) => KIND_NAMES[k]?.[lang] ?? k}
+            scan={(k) => SCAN_NAMES[k]?.[lang] ?? k}
+          />
+        </div>
+
+        <div className="an-card">
           <h3>{tx('قمع الدفع', 'Payment funnel')}</h3>
           {cur.orders_created === 0 ? (
             <p className="an-empty">{noData}</p>
@@ -813,19 +1009,6 @@ export default function AnalyticsPanel() {
               </ul>
             </>
           )}
-        </div>
-
-        <div className="an-card">
-          <h3>{tx('حسب المنطقة', 'By zone')}</h3>
-          <RankList
-            empty={noData}
-            locale={locale}
-            items={top.zones.map((z) => ({
-              label: ZONE_NAMES[z.zone]?.[lang] ?? String(z.zone),
-              value: z.tickets,
-              sub: `${money(z.revenue)} · ${num(z.passengers, locale)} ${tx('راكب', 'passengers')}`,
-            }))}
-          />
         </div>
       </div>
 
@@ -873,7 +1056,19 @@ export default function AnalyticsPanel() {
         </div>
       </div>
 
-      <div className="an-grid-3">
+      <div className="an-grid-4">
+        <div className="an-card">
+          <h3>{tx('حسب المنطقة', 'By zone')}</h3>
+          <RankList
+            empty={noData}
+            locale={locale}
+            items={top.zones.map((z) => ({
+              label: ZONE_NAMES[z.zone]?.[lang] ?? String(z.zone),
+              value: z.tickets,
+              sub: `${money(z.revenue)} · ${num(z.passengers, locale)} ${tx('راكب', 'passengers')}`,
+            }))}
+          />
+        </div>
         <div className="an-card">
           <h3>{tx('كاملة مقابل نصف', 'Full vs half')}</h3>
           <RankList
