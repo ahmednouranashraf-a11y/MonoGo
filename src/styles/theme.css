@@ -1157,3 +1157,111 @@ html[data-theme='dark'] .sub-checkout-error {
   }
 }
 
+
+
+
+/* =====================================================
+   Dark mode, part 3: neutral gray (Google-style) + MonoGo accents
+   Paste at the END of theme.css
+   ===================================================== */
+
+html[data-theme='dark'] {
+  --ink: #e8eaed;
+  --paper: #1f2023;
+  --surface: #292a2e;
+  --card: #292a2e;
+  --line: #3c3f45;
+  --muted: #9aa0a6;
+  --brand: #9fa8ff;                      /* أزرق الهوية، مخفف */
+  --brand-soft: rgba(159, 168, 255, .14);
+  --brand-deep: #323338;
+  --accent: #f5d547;                     /* أصفر أهدى */
+  --on-accent: #1f2023;
+  --sidebar: #1a1b1e;
+  --field: #323338;                      /* حقول وعناصر داخلية */
+}
+
+/* ---------- Sidebar: رمادي محايد بدل النيلي ---------- */
+html[data-theme='dark'] .sidebar {
+  background: var(--sidebar);
+  border-inline-end: 1px solid var(--line);
+}
+html[data-theme='dark'] .brand small,
+html[data-theme='dark'] .sidebar-section-title { color: var(--muted); }
+html[data-theme='dark'] .sidebar-footer { color: #80868b; }
+html[data-theme='dark'] .nav-item { color: #bdc1c6; }
+html[data-theme='dark'] .nav-item:hover { background: #2a2b2f; color: #fff; }
+html[data-theme='dark'] .nav-item.active { background: #323338; color: #fff; }
+html[data-theme='dark'] .side-help { background: #26272a; border-color: var(--line); }
+html[data-theme='dark'] .side-help p { color: var(--muted); }
+
+/* ---------- الكروت الكبيرة: سطح رمادي بدل الجريدينت ---------- */
+html[data-theme='dark'] .hero,
+html[data-theme='dark'] .network-aside,
+html[data-theme='dark'] .ticket-cta,
+html[data-theme='dark'] .gate-card:not(.ok):not(.no) {
+  background: #2d2e33;
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+html[data-theme='dark'] .hero-pattern { border-color: #ffffff10; box-shadow: none; }
+html[data-theme='dark'] .hero-kicker,
+html[data-theme='dark'] .hero p,
+html[data-theme='dark'] .network-aside p,
+html[data-theme='dark'] .network-aside > span,
+html[data-theme='dark'] .network-aside > small,
+html[data-theme='dark'] .aside-planned span,
+html[data-theme='dark'] .aside-planned small { color: var(--muted); }
+
+/* ---------- حقول وعناصر داخلية ---------- */
+html[data-theme='dark'] .station-trigger,
+html[data-theme='dark'] .station-search,
+html[data-theme='dark'] .card-step,
+html[data-theme='dark'] .result-stats,
+html[data-theme='dark'] .terminal-label,
+html[data-theme='dark'] .quick-icon.lavender,
+html[data-theme='dark'] .pay-option:not(.active),
+html[data-theme='dark'] .modal-route,
+html[data-theme='dark'] .modal-close,
+html[data-theme='dark'] .outline-button,
+html[data-theme='dark'] .interchange-label.planned,
+html[data-theme='dark'] input,
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea {
+  background: var(--field);
+  border-color: var(--line);
+}
+html[data-theme='dark'] .trip-meter { background: #3c3f45; }
+html[data-theme='dark'] .quick-icon.peach { background: #3a3720; color: var(--accent); }
+
+/* ---------- الأزرار: أكسنت فاتح بنص غامق ---------- */
+html[data-theme='dark'] .dark-button,
+html[data-theme='dark'] .site-brand-mark,
+html[data-theme='dark'] .an-seg button.active {
+  background: var(--brand);
+  color: #1f2023;
+}
+html[data-theme='dark'] .dark-button:hover:not(:disabled) { background: #b4bbff; }
+html[data-theme='dark'] .price-buy:hover,
+html[data-theme='dark'] .price-buy.selected,
+html[data-theme='dark'] .lang-toggle:hover {
+  background: var(--brand);
+  color: #1f2023;
+}
+html[data-theme='dark'] .vp-close:hover { background: var(--brand); color: #1f2023; }
+
+/* ---------- Quick bar ---------- */
+html[data-theme='dark'] .quickbar {
+  background: #323338;
+  border: 1px solid var(--line);
+  border-inline-start: 0;
+}
+html[data-theme='dark'] .quickbar-label { background: #3c3f45; }
+
+/* ---------- ظلال ملونة ---------- */
+html[data-theme='dark'] .planner-card,
+html[data-theme='dark'] .result-card,
+html[data-theme='dark'] .network-card,
+html[data-theme='dark'] .fare-card.featured,
+html[data-theme='dark'] .quick-card:not(.static):hover { box-shadow: none; }
+html[data-theme='dark'] .station-dropdown { box-shadow: 0 12px 32px #00000066; }
