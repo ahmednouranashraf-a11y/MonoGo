@@ -19,14 +19,13 @@ import StationsPage from './pages/StationsPage';
 import SupportPage from './pages/SupportPage';
 import VerificationPage from './pages/VerificationPage';
 import VerifyScreen from './pages/VerifyScreen';
-import VisionPage from './pages/VisionPage';
 
 const CLOCK_TICK_MS = 30_000;
-const validPages: Page[] = ['home', 'map', 'stations', 'fares', 'mytickets', 'gate', 'dashboard', 'verification', 'admin', 'auth', 'support', 'vision'];
-const translatedPages: Page[] = ['home', 'map', 'stations', 'fares', 'mytickets', 'gate', 'dashboard', 'verification', 'admin', 'auth', 'support', 'vision'];
+const validPages: Page[] = ['home', 'map', 'stations', 'fares', 'mytickets', 'gate', 'dashboard', 'verification', 'admin', 'auth', 'support'];
+const translatedPages: Page[] = ['home', 'map', 'stations', 'fares', 'mytickets', 'gate', 'dashboard', 'verification', 'admin', 'auth', 'support'];
 
 /** Private / data pages: the news ticker is not shown on them. */
-const pagesWithoutTicker: Page[] = ['dashboard', 'verification', 'admin', 'support', 'vision'];
+const pagesWithoutTicker: Page[] = ['dashboard', 'verification', 'admin', 'support'];
 
 function getInitialPage(): Page {
   try {
@@ -159,8 +158,6 @@ function Shell() {
         return <VerificationPage />;
       case 'support':
         return <SupportPage />;
-      case 'vision':
-        return <VisionPage />;
       case 'admin':
         return isAdmin ? (
           <AdminPage />
