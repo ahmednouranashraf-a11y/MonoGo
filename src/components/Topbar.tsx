@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext';
 import { brand } from '../config/brand';
 import { navLabelsEn } from '../i18n/dictionary';
 import { useLanguage } from '../i18n/LanguageContext';
+import { useTheme } from '../hooks/useTheme';
 import { formatTime } from '../lib/format';
 import { nav, type Page } from '../navigation';
 import Icon from './Icon';
@@ -44,6 +45,9 @@ export default function Topbar({ page, now, menuOpen, onToggleMenu, onGo, onLogi
   const isAr = lang === 'ar';
   /** Account menu labels are written here, so they never show a raw key like "signOut". */
   const tx = (ar: string, en: string) => (isAr ? ar : en);
+  const { theme, toggle: toggleTheme } = useTheme();
+  const dark = theme === 'dark';
+  const themeLabel = dark ? tx('الوضع الفاتح', 'Light mode') : tx('الوضع الداكن', 'Dark mode');
   const [accountOpen, setAccountOpen] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null);
 
@@ -166,10 +170,31 @@ export default function Topbar({ page, now, menuOpen, onToggleMenu, onGo, onLogi
             ))}
           </nav>
 
-          <button className="lang-toggle" onClick={toggleLang} aria-label={t('switchLangLabel')} title={t('switchLangLabel')}>
-            <GlobeIcon />
-            <span>{t('switchLangShort')}</span>
-          </button>
+          <div className="header-actions">
+            <button
+              type="button"
+              className="lang-toggle theme-toggle"
+              onClick={toggleTheme}
+              aria-label={themeLabel}
+              title={themeLabel}
+            >
+              {dark ? (
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+            </button>
+
+            <button className="lang-toggle" onClick={toggleLang} aria-label={t('switchLangLabel')} title={t('switchLangLabel')}>
+              <GlobeIcon />
+              <span>{t('switchLangShort')}</span>
+            </button>
+          </div>
 
           <button
             className="mobile-menu"
