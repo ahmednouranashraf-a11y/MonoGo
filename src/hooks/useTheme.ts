@@ -1,30 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Sun, Moon, Globe } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme'; // عدّل المسار
 
-export type Theme = 'light' | 'dark';
+// جوه الكومبوننت
+const { theme, toggle } = useTheme();
 
-const STORAGE_KEY = 'monoraily_theme';
+// جنب زرار اللغة
+<div className="header-actions">
+  <button
+    type="button"
+    className="theme-toggle-btn"
+    onClick={toggle}
+    aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+    title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+  >
+    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+  </button>
 
-function readTheme(): Theme {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light';
-  } catch {
-    return 'light';
-  }
-}
-
-export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(readTheme);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    try {
-      localStorage.setItem(STORAGE_KEY, theme);
-    } catch {
-      // ignore
-    }
-  }, [theme]);
-
-  const toggle = useCallback(() => setTheme((t) => (t === 'dark' ? 'light' : 'dark')), []);
-
-  return { theme, toggle };
-}
+  {/* زرار "عربي" الحالي زي ما هو */}
+</div>
