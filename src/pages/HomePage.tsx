@@ -131,6 +131,7 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
                 videoRefs.current[i] = el;
               }}
               className={`hs__video${i === slide ? ' is-active' : ''}`}
+              style={{ objectPosition: s.position }}
               src={s.src}
               poster={s.poster}
               muted
@@ -146,30 +147,12 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
         <div className="hs__shade" />
 
         <button className="hs__arrow hs__arrow--prev" onClick={prevSlide} aria-label="Previous slide">
-          <svg
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 5l-7 7 7 7" />
           </svg>
         </button>
         <button className="hs__arrow hs__arrow--next" onClick={nextSlide} aria-label="Next slide">
-          <svg
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -226,9 +209,7 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
             </h2>
             <p>{t('home.heroText', { n: count })}</p>
             <button
-              onClick={() =>
-                document.getElementById('planner')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-              }
+              onClick={() => document.getElementById('planner')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
             >
               {t('home.heroCta')} <Icon name="arrow" size={18} />
             </button>
@@ -338,9 +319,7 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
         </div>
 
         <footer className="main-footer">
-          <span>
-            {brand.name} — {t('home.footer1')}
-          </span>
+          <span>{brand.name} — {t('home.footer1')}</span>
           <span>{t('home.footer2')}</span>
         </footer>
       </div>
