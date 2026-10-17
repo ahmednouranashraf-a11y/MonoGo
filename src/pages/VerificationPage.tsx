@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { useLanguage } from '../i18n/LanguageContext';
 import {
+  cancelVerification,
   categoryLabels,
   myVerification,
   statusLabels,
@@ -60,6 +61,35 @@ export default function VerificationPage() {
     }
   };
 
+  const cancel = async (wasPending: boolean) => {
+    const ask = wasPending
+      ? isAr
+        ? 'تسحب طلب التوثيق؟ المستند اللي رفعته هيتمسح.'
+        : 'Withdraw your verification request? The uploaded document will be deleted.'
+      : isAr
+        ? 'تلغي توثيق حسابك؟ مش هتقدر تحجز نصف تذكرة لحد ما توثّق من جديد، والمستند هيتمسح. التذاكر اللي اتحجزت قبل كده مش هتتأثر.'
+        : 'Cancel your verification? You will not be able to book half-fare tickets until you verify again, and your document will be deleted. Tickets you already bought are not affected.';
+    if (!window.confirm(ask)) return;
+    setBusy(true);
+    setMessage(null);
+    const result = await cancelVerification();
+    setBusy(false);
+    if (result.ok) {
+      setMessage({
+        ok: true,
+        text: wasPending
+          ? isAr ? 'اتسحب طلب التوثيق.' : 'Your request was withdrawn.'
+          : isAr ? 'اتلغى توثيق حسابك.' : 'Your verification was cancelled.',
+      });
+      await load();
+    } else {
+      setMessage({
+        ok: false,
+        text: isAr ? result.error ?? 'حصلت مشكلة، جرّب تاني.' : 'Could not cancel, please try again.',
+      });
+    }
+  };
+
   const expired = info && !info.category && info.latest?.status === 'approved';
   const pending = info?.latest?.status === 'pending';
   const rejected = info?.latest?.status === 'rejected';
@@ -83,6 +113,9 @@ export default function VerificationPage() {
           <h3>{isAr ? 'حسابك موثّق ✓' : 'Your Account is Verified ✓'}</h3>
           <p>{isAr ? `الفئة: ${getCatLabel(info.category)}` : `Category: ${getCatLabel(info.category)}`}</p>
           <p>{isAr ? `التوثيق ساري لحد ${info.until}.` : `Verification valid until ${info.until}.`}</p>
+          <button className="outline-button" disabled={busy} onClick={() => cancel(false)}>
+            {isAr ? 'إلغاء التوثيق' : 'Cancel verification'}
+          </button>
         </div>
       ) : pending ? (
         <div className="network-card">
@@ -92,6 +125,9 @@ export default function VerificationPage() {
               ? 'طلبك وصل وبيتراجع. هتقدر تحجز نصف تذكرة أول ما تتم الموافقة.'
               : 'Your request was received and is under review. You can book half-fare tickets once approved.'}
           </p>
+          <button className="outline-button" disabled={busy} onClick={() => cancel(true)}>
+            {isAr ? 'سحب الطلب' : 'Withdraw request'}
+          </button>
         </div>
       ) : (
         <div className="network-card">
