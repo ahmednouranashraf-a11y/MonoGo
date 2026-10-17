@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, TouchEvent } from 'react';
 import { brand } from '../config/brand';
 import Icon from '../components/Icon';
@@ -43,7 +43,6 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
   const [slide, setSlide] = useState(0);
   const [hovered, setHovered] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
-  const bgRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const fillRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const touchStartX = useRef<number | null>(null);
 
@@ -61,15 +60,6 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
       } else {
         v.pause();
       }
-      const bg = bgRefs.current[i];
-      if (bg) {
-        if (i === slide) {
-          bg.currentTime = 0;
-          bg.play().catch(() => {});
-        } else {
-          bg.pause();
-        }
-      }
     });
     fillRefs.current.forEach((f) => {
       if (f) f.style.transform = 'scaleX(0)';
@@ -80,14 +70,8 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
   useEffect(() => {
     const v = videoRefs.current[slide];
     if (!v) return;
-    const bg = bgRefs.current[slide];
-    if (hovered) {
-      v.pause();
-      bg?.pause();
-    } else {
-      v.play().catch(() => {});
-      bg?.play().catch(() => {});
-    }
+    if (hovered) v.pause();
+    else v.play().catch(() => {});
   }, [hovered, slide]);
 
   // progress bar follows the real video time, and moves on at maxDuration
@@ -96,8 +80,6 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
     const tick = () => {
       const v = videoRefs.current[slide];
       const fill = fillRefs.current[slide];
-      const bg = bgRefs.current[slide];
-      if (v && bg && Math.abs(bg.currentTime - v.currentTime) > 0.3) bg.currentTime = v.currentTime;
       if (v && fill && v.duration) {
         const limit = Math.min(v.duration, HERO_SLIDES[slide].maxDuration ?? Infinity);
         const p = Math.min(v.currentTime / limit, 1);
@@ -143,49 +125,51 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
       >
         <div className="hs__slides">
           {HERO_SLIDES.map((s, i) => (
-            <Fragment key={s.src}>
-              {/* blurred copy that fills the whole area behind the full video */}
-              <video
-                ref={(el) => {
-                  bgRefs.current[i] = el;
-                }}
-                className={`hs__bg${i === slide ? ' is-active' : ''}`}
-                src={s.src}
-                poster={s.poster}
-                muted
-                playsInline
-                preload={i === 0 ? 'auto' : 'metadata'}
-                autoPlay={i === 0}
-                aria-hidden="true"
-                tabIndex={-1}
-              />
-              <video
-                ref={(el) => {
-                  videoRefs.current[i] = el;
-                }}
-                className={`hs__video${i === slide ? ' is-active' : ''}`}
-                src={s.src}
-                poster={s.poster}
-                muted
-                playsInline
-                preload={i === 0 ? 'auto' : 'metadata'}
-                autoPlay={i === 0}
-                aria-hidden={i !== slide}
-                onEnded={i === slide ? nextSlide : undefined}
-                onError={i === slide ? nextSlide : undefined}
-              />
-            </Fragment>
+            <video
+              key={s.src}
+              ref={(el) => {
+                videoRefs.current[i] = el;
+              }}
+              className={`hs__video${i === slide ? ' is-active' : ''}`}
+              src={s.src}
+              poster={s.poster}
+              muted
+              playsInline
+              preload={i === 0 ? 'auto' : 'metadata'}
+              autoPlay={i === 0}
+              aria-hidden={i !== slide}
+              onEnded={i === slide ? nextSlide : undefined}
+              onError={i === slide ? nextSlide : undefined}
+            />
           ))}
         </div>
         <div className="hs__shade" />
 
         <button className="hs__arrow hs__arrow--prev" onClick={prevSlide} aria-label="Previous slide">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M15 5l-7 7 7 7" />
           </svg>
         </button>
         <button className="hs__arrow hs__arrow--next" onClick={nextSlide} aria-label="Next slide">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -242,7 +226,9 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
             </h2>
             <p>{t('home.heroText', { n: count })}</p>
             <button
-              onClick={() => document.getElementById('planner')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              onClick={() =>
+                document.getElementById('planner')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
             >
               {t('home.heroCta')} <Icon name="arrow" size={18} />
             </button>
@@ -352,7 +338,9 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
         </div>
 
         <footer className="main-footer">
-          <span>{brand.name} — {t('home.footer1')}</span>
+          <span>
+            {brand.name} — {t('home.footer1')}
+          </span>
           <span>{t('home.footer2')}</span>
         </footer>
       </div>
