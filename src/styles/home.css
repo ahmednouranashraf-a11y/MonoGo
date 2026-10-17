@@ -190,28 +190,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
   gap: 19px;
-  align-items: stretch; /* both cards get the same height */
-}
-
-.planner-card,
-.planner-grid > .result-card {
-  display: flex;
-  flex-direction: column;
-}
-
-/* push the blue button (and its note) to the bottom so both buttons sit on one line */
-.planner-card .plan-button,
-.planner-grid > .result-card > .dark-button {
-  margin-top: auto;
-}
-
-.planner-card .plan-button {
-  margin-top: auto;
-}
-
-.planner-foot,
-.estimate-note {
-  min-height: 34px;
+  align-items: start;
 }
 
 .planner-card,
@@ -909,12 +888,12 @@ html[dir="ltr"] .swap-button {
 /* حركة شريط الأخبار في وضع العربي (RTL) */
 html[dir="rtl"] .news-track,
 :root:not([dir="ltr"]) .news-track {
-  animation: ticker-rtl 70s linear infinite !important;
+  animation: ticker-rtl 35s linear infinite !important;
 }
 
 /* حركة شريط الأخبار في وضع الإنجليزي (LTR) */
 html[dir="ltr"] .news-track {
-  animation: ticker-ltr 70s linear infinite !important;
+  animation: ticker-ltr 35s linear infinite !important;
 }
 
 @keyframes ticker-rtl {
@@ -943,7 +922,7 @@ html[dir="ltr"] .news-track {
    (if you pasted the earlier version, replace it)
    ======================================= */
 .hs {
-  --hs-height: clamp(300px, 30vw, 560px);
+  --hs-height: clamp(380px, 64vh, 680px);
   --hs-accent: #ffffff; /* progress fill colour */
   --hs-track: rgba(255, 255, 255, 0.4); /* inactive rectangle colour */
   --hs-dot-w: 28px;
@@ -969,21 +948,20 @@ html[dir="ltr"] .news-track {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill; /* stretch to cover the whole area */
+  object-fit: cover;
   opacity: 0;
   transition: opacity 0.7s ease;
 }
 
 .hs__video.is-active {
   opacity: 1;
-  z-index: 2;
+  z-index: 1;
 }
-
 
 .hs__shade {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 2;
   pointer-events: none;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 40%);
 }
@@ -1083,7 +1061,7 @@ html[dir='rtl'] .hs__fill {
 
 @media (max-width: 768px) {
   .hs {
-    --hs-height: clamp(260px, 56vw, 460px);
+    --hs-height: clamp(260px, 48vh, 400px);
     --hs-dot-w: 20px;
     --hs-dot-w-active: 48px;
   }
