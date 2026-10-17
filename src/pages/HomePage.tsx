@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent, TouchEvent } from 'react';
 import { brand } from '../config/brand';
 import Icon from '../components/Icon';
@@ -43,6 +43,7 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
   const [slide, setSlide] = useState(0);
   const [hovered, setHovered] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const bgRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const fillRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const touchStartX = useRef<number | null>(null);
 
@@ -60,6 +61,15 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
       } else {
         v.pause();
       }
+      const bg = bgRefs.current[i];
+      if (bg) {
+        if (i === slide) {
+          bg.currentTime = 0;
+          bg.play().catch(() => {});
+        } else {
+          bg.pause();
+        }
+      }
     });
     fillRefs.current.forEach((f) => {
       if (f) f.style.transform = 'scaleX(0)';
@@ -70,8 +80,14 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
   useEffect(() => {
     const v = videoRefs.current[slide];
     if (!v) return;
-    if (hovered) v.pause();
-    else v.play().catch(() => {});
+    const bg = bgRefs.current[slide];
+    if (hovered) {
+      v.pause();
+      bg?.pause();
+    } else {
+      v.play().catch(() => {});
+      bg?.play().catch(() => {});
+    }
   }, [hovered, slide]);
 
   // progress bar follows the real video time, and moves on at maxDuration
@@ -80,6 +96,8 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
     const tick = () => {
       const v = videoRefs.current[slide];
       const fill = fillRefs.current[slide];
+      const bg = bgRefs.current[slide];
+      if (v && bg && Math.abs(bg.currentTime - v.currentTime) > 0.3) bg.currentTime = v.currentTime;
       if (v && fill && v.duration) {
         const limit = Math.min(v.duration, HERO_SLIDES[slide].maxDuration ?? Infinity);
         const p = Math.min(v.currentTime / limit, 1);
@@ -125,23 +143,38 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
       >
         <div className="hs__slides">
           {HERO_SLIDES.map((s, i) => (
-            <video
-              key={s.src}
-              ref={(el) => {
-                videoRefs.current[i] = el;
-              }}
-              className={`hs__video${i === slide ? ' is-active' : ''}`}
-              style={{ objectPosition: s.position }}
-              src={s.src}
-              poster={s.poster}
-              muted
-              playsInline
-              preload={i === 0 ? 'auto' : 'metadata'}
-              autoPlay={i === 0}
-              aria-hidden={i !== slide}
-              onEnded={i === slide ? nextSlide : undefined}
-              onError={i === slide ? nextSlide : undefined}
-            />
+            <Fragment key={s.src}>
+              {/* blurred copy that fills the whole area behind the full video */}
+              <video
+                ref={(el) => {
+                  bgRefs.current[i] = el;
+                }}
+                className={`hs__bg${i === slide ? ' is-active' : ''}`}
+                src={s.src}
+                poster={s.poster}
+                muted
+                playsInline
+                preload={i === 0 ? 'auto' : 'metadata'}
+                autoPlay={i === 0}
+                aria-hidden="true"
+                tabIndex={-1}
+              />
+              <video
+                ref={(el) => {
+                  videoRefs.current[i] = el;
+                }}
+                className={`hs__video${i === slide ? ' is-active' : ''}`}
+                src={s.src}
+                poster={s.poster}
+                muted
+                playsInline
+                preload={i === 0 ? 'auto' : 'metadata'}
+                autoPlay={i === 0}
+                aria-hidden={i !== slide}
+                onEnded={i === slide ? nextSlide : undefined}
+                onError={i === slide ? nextSlide : undefined}
+              />
+            </Fragment>
           ))}
         </div>
         <div className="hs__shade" />
