@@ -219,12 +219,7 @@ export default function HomePage({ planner, now, onGo, onBook }: Props) {
         <div className="section-title-row">
           <div>
             <span className="eyebrow green">{t('home.goEyebrow')}</span>
-            <h2>
-              {t('home.goTitle')}{' '}
-              <span className="heading-spark">
-                <Icon name="spark" size={18} />
-              </span>
-            </h2>
+            <h2>{t('home.goTitle')}</h2>
           </div>
           <span className="section-helper">{t('home.goHelper')}</span>
         </div>
