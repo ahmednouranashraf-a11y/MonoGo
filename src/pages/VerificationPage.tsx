@@ -148,32 +148,35 @@ export default function VerificationPage() {
 
           <h3>{isAr ? 'ابعت طلب توثيق' : 'Submit Verification Request'}</h3>
 
-          <label className="auth-sub" htmlFor="verify-category">
-            {isAr ? 'الفئة' : 'Category'}
-          </label>
-          <select
-            id="verify-category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value as VerificationCategory)}
-          >
-            {(Object.keys(categoryLabels) as VerificationCategory[]).map((key) => (
-              <option key={key} value={key}>
-                {getCatLabel(key)}
-              </option>
-            ))}
-          </select>
+          <div className="verify-form">
+            <div className="verify-field">
+              <label htmlFor="verify-category">{isAr ? 'الفئة' : 'Category'}</label>
+              <select
+                id="verify-category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value as VerificationCategory)}
+              >
+                {(Object.keys(categoryLabels) as VerificationCategory[]).map((key) => (
+                  <option key={key} value={key}>
+                    {getCatLabel(key)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <label className="auth-sub" htmlFor="verify-file">
-            {isAr
-              ? 'صورة الهوية أو الكارنيه (JPG أو PNG أو WEBP أو PDF، لحد 5 ميجا)'
-              : 'ID image or card photo (JPG, PNG, WEBP, or PDF up to 5 MB)'}
-          </label>
-          <input
-            id="verify-file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
+            <div className="verify-field">
+              <label htmlFor="verify-file">{isAr ? 'صورة الهوية أو الكارنيه' : 'ID image or card photo'}</label>
+              <input
+                id="verify-file"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              />
+              <small>
+                {isAr ? 'JPG أو PNG أو WEBP أو PDF، لحد 5 ميجا' : 'JPG, PNG, WEBP, or PDF up to 5 MB'}
+              </small>
+            </div>
+          </div>
 
           <p className="auth-sub">
             {isAr
