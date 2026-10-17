@@ -12,7 +12,7 @@ export const nav = [
 ] as const satisfies readonly { id: string; label: string; labelKey: Key; icon: IconName }[];
 
 export type NavId = (typeof nav)[number]['id'];
-export type Page = NavId | 'dashboard' | 'admin' | 'auth' | 'verification' | 'support';
+export type Page = NavId | 'dashboard' | 'admin' | 'auth' | 'verification' | 'support' | 'vision';
 
 /** Pages that need a signed-in user. */
 export const protectedPages: Page[] = ['mytickets', 'dashboard', 'admin', 'verification', 'support'];
@@ -24,6 +24,7 @@ export const extraPageTitles: Partial<Record<Page, string>> = {
   auth: 'الحساب',
   verification: 'توثيق الفئة',
   support: 'الدعم والشكاوي',
+  vision: 'رؤيتنا',
 };
 
 const extraPageTitleKeys: Partial<Record<Page, Key>> = {
