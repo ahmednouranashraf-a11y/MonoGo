@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import type { Page } from '../navigation';
-import VisionPanel from './VisionPanel';
 
 type Props = { page: Page; onGo: (page: Page) => void };
 
@@ -9,7 +7,6 @@ export default function QuickBar({ page, onGo }: Props) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
   const dir = isAr ? 'rtl' : 'ltr';
-  const [visionOpen, setVisionOpen] = useState(false);
 
   const supportLabel = isAr ? 'الدعم والشكاوى' : 'Support and complaints';
   const visionLabel = isAr ? 'رؤيتنا' : 'Our vision';
@@ -43,10 +40,10 @@ export default function QuickBar({ page, onGo }: Props) {
 
         <button
           type="button"
-          className={`quickbar-item${visionOpen ? ' active' : ''}`}
-          onClick={() => setVisionOpen(true)}
+          className={`quickbar-item${page === 'vision' ? ' active' : ''}`}
+          onClick={() => onGo('vision')}
           aria-label={visionLabel}
-          aria-haspopup="dialog"
+          aria-current={page === 'vision' ? 'page' : undefined}
         >
           <svg
             viewBox="0 0 24 24"
@@ -65,8 +62,6 @@ export default function QuickBar({ page, onGo }: Props) {
           </span>
         </button>
       </nav>
-
-      {visionOpen && <VisionPanel onClose={() => setVisionOpen(false)} />}
     </>
   );
 }
