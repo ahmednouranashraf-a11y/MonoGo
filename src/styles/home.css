@@ -943,7 +943,7 @@ html[dir="ltr"] .news-track {
    (if you pasted the earlier version, replace it)
    ======================================= */
 .hs {
-  --hs-height: clamp(380px, calc(100svh - 170px), 760px);
+  --hs-height: clamp(300px, 30vw, 560px);
   --hs-accent: #ffffff; /* progress fill colour */
   --hs-track: rgba(255, 255, 255, 0.4); /* inactive rectangle colour */
   --hs-dot-w: 28px;
