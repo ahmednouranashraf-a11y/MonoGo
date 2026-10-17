@@ -190,7 +190,28 @@
   display: grid;
   grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
   gap: 19px;
-  align-items: start;
+  align-items: stretch; /* both cards get the same height */
+}
+
+.planner-card,
+.planner-grid > .result-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* push the blue button (and its note) to the bottom so both buttons sit on one line */
+.planner-card .plan-button,
+.planner-grid > .result-card > .dark-button {
+  margin-top: auto;
+}
+
+.planner-card .plan-button {
+  margin-top: auto;
+}
+
+.planner-foot,
+.estimate-note {
+  min-height: 34px;
 }
 
 .planner-card,
@@ -888,12 +909,12 @@ html[dir="ltr"] .swap-button {
 /* حركة شريط الأخبار في وضع العربي (RTL) */
 html[dir="rtl"] .news-track,
 :root:not([dir="ltr"]) .news-track {
-  animation: ticker-rtl 35s linear infinite !important;
+  animation: ticker-rtl 70s linear infinite !important;
 }
 
 /* حركة شريط الأخبار في وضع الإنجليزي (LTR) */
 html[dir="ltr"] .news-track {
-  animation: ticker-ltr 35s linear infinite !important;
+  animation: ticker-ltr 70s linear infinite !important;
 }
 
 @keyframes ticker-rtl {
@@ -957,6 +978,7 @@ html[dir="ltr"] .news-track {
   opacity: 1;
   z-index: 1;
 }
+
 
 .hs__shade {
   position: absolute;
