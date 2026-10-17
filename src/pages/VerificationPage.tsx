@@ -166,12 +166,21 @@ export default function VerificationPage() {
 
             <div className="verify-field">
               <label htmlFor="verify-file">{isAr ? 'صورة الهوية أو الكارنيه' : 'ID image or card photo'}</label>
-              <input
-                id="verify-file"
-                type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              />
+              <div className="verify-file">
+                <input
+                  id="verify-file"
+                  className="verify-file__input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                />
+                <label htmlFor="verify-file" className="verify-file__box">
+                  <span className="verify-file__btn">{isAr ? 'اختار ملف' : 'Choose file'}</span>
+                  <span className={`verify-file__name${file ? ' has-file' : ''}`}>
+                    {file ? file.name : isAr ? 'لم يتم اختيار ملف' : 'No file chosen'}
+                  </span>
+                </label>
+              </div>
               <small>
                 {isAr ? 'JPG أو PNG أو WEBP أو PDF، لحد 5 ميجا' : 'JPG, PNG, WEBP, or PDF up to 5 MB'}
               </small>
