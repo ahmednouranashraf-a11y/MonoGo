@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import Icon, { type IconName } from '../components/Icon';
 import { useLanguage } from '../i18n/LanguageContext';
 
 type Section = { id: string; title: string; paragraphs?: string[]; items?: string[] };
 
 type Copy = {
+  kicker: string;
+  lead: string;
   heading: string;
   toc: string;
   note: string;
@@ -17,8 +20,12 @@ type Copy = {
  */
 const PARTNER = null as string | null;
 
+const SECTION_ICON: Record<string, IconName> = { vision: 'monorail', mission: 'route', goals: 'check' };
+
 const COPY: Record<'ar' | 'en', Copy> = {
   ar: {
+    kicker: 'عن المشروع',
+    lead: 'منصة رقمية واحدة لتخطيط الرحلة وحجز التذكرة والدعم، بالعربية والإنجليزية.',
     heading: 'عن MonoGo',
     toc: 'المحتويات',
     note: 'MonoGo مشروع تعليمي مستقل وليس موقعاً رسمياً، والتذاكر التي يصدرها تجريبية.',
@@ -55,6 +62,8 @@ const COPY: Record<'ar' | 'en', Copy> = {
     ],
   },
   en: {
+    kicker: 'About the project',
+    lead: 'One digital platform for planning your trip, booking tickets and getting support, in Arabic and English.',
     heading: 'About MonoGo',
     toc: 'Contents',
     note: 'MonoGo is an independent educational project, not an official website, and the tickets it issues are for demonstration.',
@@ -118,33 +127,17 @@ export default function VisionPage() {
   };
 
   return (
-    <div className="vision-page">
-      <h1 className="vision-title">{copy.heading}</h1>
+    <div className="about">
+      <header className="about-hero">
+        <span className="about-kicker">
+          <span className="about-kicker-dot" /> {copy.kicker}
+        </span>
+        <h1>{copy.heading}</h1>
+        <p>{copy.lead}</p>
+      </header>
 
-      <div className="vision-layout">
-        <div className="vision-content">
-          {PARTNER && <p className="vision-partner">{copy.partner(PARTNER)}</p>}
-
-          {copy.sections.map((s) => (
-            <section key={s.id} id={`vision-${s.id}`} className="vision-section">
-              <h2>{s.title}</h2>
-              {s.paragraphs?.map((p) => (
-                <p key={p}>{p}</p>
-              ))}
-              {s.items && (
-                <ul>
-                  {s.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ))}
-
-          <p className="vision-note">{copy.note}</p>
-        </div>
-
-        <nav className="vision-toc" aria-label={copy.toc}>
+      <div className="about-layout">
+        <nav className="about-toc" aria-label={copy.toc}>
           <strong>{copy.toc}</strong>
           {copy.sections.map((s) => (
             <button
@@ -154,10 +147,45 @@ export default function VisionPage() {
               aria-current={s.id === active ? 'true' : undefined}
               onClick={() => goTo(s.id)}
             >
+              <Icon name={SECTION_ICON[s.id] ?? 'info'} size={16} />
               {s.title}
             </button>
           ))}
         </nav>
+
+        <div className="about-content">
+          {PARTNER && <p className="about-partner">{copy.partner(PARTNER)}</p>}
+
+          {copy.sections.map((s) => (
+            <section key={s.id} id={`vision-${s.id}`} className="about-card">
+              <div className="about-card-head">
+                <span className="about-icon">
+                  <Icon name={SECTION_ICON[s.id] ?? 'info'} size={22} />
+                </span>
+                <h2>{s.title}</h2>
+              </div>
+              {s.paragraphs?.map((p) => (
+                <p key={p}>{p}</p>
+              ))}
+              {s.items && (
+                <ul className="about-goals">
+                  {s.items.map((item) => (
+                    <li key={item}>
+                      <span className="about-check">
+                        <Icon name="check" size={14} />
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))}
+
+          <p className="about-note">
+            <Icon name="info" size={16} /> {copy.note}
+          </p>
+        </div>
       </div>
     </div>
   );
