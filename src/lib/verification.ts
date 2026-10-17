@@ -104,6 +104,31 @@ export async function submitVerification(file: File, category: VerificationCateg
   return { ok: true };
 }
 
+/**
+ * Cancels the user's verification: withdraws a pending request or removes an active approval.
+ * The database function deletes the user's requests and clears the approval on the profile,
+ * then the uploaded ID documents are removed from the private bucket.
+ */
+export async function cancelVerification(): Promise<SubmitResult> {
+  const userId = await currentUserId();
+  if (!supabase || !userId) return { ok: false, error: 'سجّل دخول الأول' };
+
+  const { data: rows } = await supabase.from('verification_requests').select('doc_path').eq('user_id', userId);
+  const paths = ((rows ?? []) as { doc_path: string }[]).map((r) => r.doc_path).filter(Boolean);
+
+  const { error } = await supabase.rpc('cancel_my_verification');
+  if (error) {
+    console.error('cancelVerification failed', error.message);
+    return { ok: false, error: 'مقدرناش نلغي التوثيق، جرّب تاني' };
+  }
+
+  if (paths.length > 0) {
+    const removed = await supabase.storage.from(BUCKET).remove(paths);
+    if (removed.error) console.error('verification docs cleanup failed', removed.error.message);
+  }
+  return { ok: true };
+}
+
 // ---------------- Admin side ----------------
 
 export type PendingRequest = VerificationRequest & { full_name: string };
