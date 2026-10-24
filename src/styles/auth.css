@@ -1,14 +1,15 @@
 /* ---------- Auth card: sliding diagonal band ---------- */
 
 .authx-wrap {
-  /* Brand tokens: change these three lines to match the MonoGo identity */
-  --auth-deep: #0f3d2e;
-  --auth-deep-2: #07261c;
-  --auth-gold: #d9a441;
-  --auth-paper: #fbf6ec;
-  --auth-ink: #14201b;
-  --auth-muted: #6d756f;
-  --auth-line: #cdbf9f;
+  /* Brand tokens: wired to theme.css, so changing the theme (or dark mode) changes this card */
+  --auth-deep: var(--brand-deep, #1b2277);
+  --auth-deep-2: var(--sidebar, #151a4f);
+  --auth-gold: var(--accent, #f2e52b); /* the yellow stripe */
+  --auth-focus: var(--brand, #2832a4);
+  --auth-paper: var(--surface, #ffffff);
+  --auth-ink: var(--ink, #12163a);
+  --auth-muted: var(--muted, #6b7388);
+  --auth-line: var(--line, #dde0ee);
 
   --ease: cubic-bezier(0.7, 0, 0.2, 1);
   --slide: 0.9s;
@@ -31,8 +32,8 @@
   background: var(--auth-paper);
   color: var(--auth-ink);
   box-shadow:
-    0 30px 80px -30px rgba(7, 38, 28, 0.55),
-    0 0 0 1px rgba(217, 164, 65, 0.25);
+    0 30px 80px -30px rgba(18, 22, 58, 0.5),
+    0 0 0 1px rgba(40, 50, 164, 0.18);
 }
 .authx--rtl {
   --d: -1;
@@ -47,10 +48,10 @@
   z-index: 0;
   background:
     radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, 0.1), transparent 55%),
-    linear-gradient(160deg, var(--auth-deep) 0%, var(--auth-deep-2) 100%);
+    linear-gradient(160deg, var(--auth-focus) 0%, var(--auth-deep) 55%, var(--auth-deep-2) 100%);
   box-shadow:
-    inset 2px 0 0 rgba(217, 164, 65, 0.85),
-    inset -2px 0 0 rgba(217, 164, 65, 0.85);
+    inset 2px 0 0 rgba(242, 229, 43, 0.9),
+    inset -2px 0 0 rgba(242, 229, 43, 0.9);
   transform: translateX(0) skewX(calc(var(--d) * 9deg));
   transition: transform var(--slide) var(--ease);
   will-change: transform;
@@ -68,7 +69,7 @@
   justify-content: center;
   gap: 14px;
   padding: 48px 40px;
-  color: #f4ecd8;
+  color: #eef0ff;
   opacity: 0;
   visibility: hidden;
   transform: translateX(calc(var(--d) * -14px));
@@ -126,7 +127,7 @@
   max-width: 28ch;
   font-size: 0.95rem;
   line-height: 1.7;
-  color: rgba(244, 236, 216, 0.78);
+  color: rgba(238, 240, 255, 0.82);
 }
 
 /* Form panels sit side by side; the band covers the other half */
@@ -203,7 +204,7 @@
   transition: color 0.2s;
 }
 .authx__field:focus-within label {
-  color: #8a5f10;
+  color: var(--auth-focus);
 }
 .authx__control {
   display: flex;
@@ -213,8 +214,8 @@
   transition: border-color 0.2s;
 }
 .authx__control:focus-within {
-  border-color: var(--auth-gold);
-  box-shadow: 0 1.5px 0 var(--auth-gold);
+  border-color: var(--auth-focus);
+  box-shadow: 0 1.5px 0 var(--auth-focus);
 }
 .authx__control input {
   flex: 1;
@@ -240,7 +241,7 @@
   cursor: pointer;
 }
 .authx__icon--btn:hover {
-  color: var(--auth-deep);
+  color: var(--auth-focus);
 }
 .authx__field small {
   display: block;
@@ -257,12 +258,12 @@
   padding: 13px 18px;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, #17503d, var(--auth-deep));
+  background: linear-gradient(180deg, var(--auth-focus), var(--auth-deep));
   color: #fff;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 22px -10px rgba(7, 38, 28, 0.7);
+  box-shadow: 0 10px 22px -10px rgba(18, 22, 58, 0.55);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -270,7 +271,7 @@
 }
 .authx__btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 14px 26px -10px rgba(7, 38, 28, 0.75);
+  box-shadow: 0 14px 26px -10px rgba(18, 22, 58, 0.65);
 }
 .authx__btn:disabled {
   opacity: 0.6;
@@ -279,8 +280,8 @@
 .authx__btn--ghost {
   margin-top: 10px;
   background: transparent;
-  color: var(--auth-deep);
-  box-shadow: inset 0 0 0 1.5px var(--auth-deep);
+  color: var(--auth-focus);
+  box-shadow: inset 0 0 0 1.5px var(--auth-focus);
 }
 .authx__link {
   padding: 0;
@@ -310,18 +311,18 @@
   margin: 12px 0 0;
   font-size: 0.84rem;
   line-height: 1.5;
-  color: #b3261e;
+  color: var(--danger, #d93a3a);
 }
 .authx__note {
   margin: 12px 0 0;
   font-size: 0.84rem;
   line-height: 1.5;
-  color: var(--auth-deep);
+  color: var(--auth-focus);
 }
 
 :where(.authx) button:focus-visible,
 :where(.authx) input:focus-visible {
-  outline: 2px solid var(--auth-gold);
+  outline: 2px solid var(--auth-focus);
   outline-offset: 3px;
 }
 
