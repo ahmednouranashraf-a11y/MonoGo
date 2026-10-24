@@ -1,0 +1,417 @@
+/* Admin overview dashboard. Uses theme.css variables, so it follows light/dark mode. */
+
+.adm {
+  display: grid;
+  gap: 18px;
+}
+
+.adm-card {
+  min-width: 0;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 8px 26px -18px rgb(18 22 58 / 0.35);
+  text-align: start;
+}
+.adm-card h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.adm-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.adm-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.adm-empty {
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---------- KPI cards ---------- */
+.adm-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+.adm-kpi {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--ink);
+}
+.adm-kpi--featured {
+  background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+  border-color: transparent;
+  color: #fff;
+}
+.adm-kpi--featured::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 4px;
+  background: var(--accent);
+}
+.adm-kpi__top,
+.adm-kpi__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.adm-kpi__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.adm-kpi--featured .adm-kpi__icon {
+  background: rgb(255 255 255 / 0.18);
+  color: #fff;
+}
+.adm-kpi__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.adm-kpi--featured .adm-kpi__label {
+  color: #dbe2f4;
+}
+.adm-kpi__value {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+.adm-kpi__value small {
+  margin-inline-start: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.adm-kpi__sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+.adm-spark {
+  width: 92px;
+  height: 34px;
+  color: var(--brand);
+}
+.adm-kpi--featured .adm-spark {
+  color: var(--accent);
+}
+.adm-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.adm-delta.up {
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--success);
+}
+.adm-delta.down {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+}
+.adm-kpi--featured .adm-delta {
+  background: rgb(255 255 255 / 0.2);
+  color: #fff;
+}
+
+/* ---------- Rows ---------- */
+.adm-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 18px;
+}
+.adm-row--even {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* ---------- Segmented control + search ---------- */
+.adm-seg {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+}
+.adm-seg button {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+}
+.adm-seg button.on {
+  background: var(--surface);
+  color: var(--brand);
+  box-shadow: 0 1px 4px rgb(18 22 58 / 0.15);
+}
+.adm-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.adm-searchbox {
+  position: relative;
+  display: block;
+}
+.adm-searchbox svg {
+  position: absolute;
+  inset-inline-start: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.adm-search {
+  width: 240px;
+  padding-inline-start: 34px !important;
+  max-width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  outline: 0;
+}
+.adm-search:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+}
+
+/* ---------- Charts (recharts) ---------- */
+.adm-chart {
+  min-width: 0;
+}
+.adm-tip {
+  display: grid;
+  gap: 2px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 12px;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.25);
+}
+.adm-tip span {
+  opacity: 0.7;
+  font-size: 11px;
+}
+.adm-donut {
+  position: relative;
+  height: 190px;
+}
+.adm-donut__center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+.adm-donut__center strong {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.adm-donut__center span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.adm-legend {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.adm-legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.adm-legend i {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.adm-legend span {
+  flex: 1;
+  color: var(--ink);
+}
+.adm-legend small {
+  min-width: 38px;
+  text-align: end;
+  color: var(--muted);
+}
+
+/* ---------- Top stations ---------- */
+.adm-bars {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.adm-bars li > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.adm-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--brand-soft);
+}
+.adm-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-deep));
+}
+
+/* ---------- Users ---------- */
+.adm-users {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.adm-users li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.adm-users li > div {
+  flex: 1;
+  min-width: 0;
+}
+.adm-users strong,
+.adm-users small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-users strong {
+  font-size: 13.5px;
+}
+.adm-users small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.adm-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 900;
+}
+
+/* ---------- Tables + badges ---------- */
+.adm-scroll {
+  overflow-x: auto;
+}
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.adm-table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: start;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.adm-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.adm-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.adm-table tbody tr:hover {
+  background: var(--brand-soft);
+}
+.adm-chip {
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.adm-chip.active {
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--success);
+}
+.adm-chip.noTrips {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--ink);
+}
+.adm-chip.expired,
+.adm-chip.muted {
+  background: var(--brand-soft);
+  color: var(--muted);
+}
+.adm-chip.admin {
+  background: var(--brand);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .adm-row,
+  .adm-row--even {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .adm-search {
+    width: 100%;
+  }
+}
