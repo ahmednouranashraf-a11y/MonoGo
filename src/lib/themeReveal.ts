@@ -2,7 +2,7 @@ import { flushSync } from 'react-dom';
 import '../styles/theme-reveal.css';
 
 type Transition = { ready: Promise<void>; finished: Promise<void> };
-type DocWithTransitions = Document & { startViewTransition?: (update: () => void | Promise<void>) => Transition };
+type DocWithTransitions = Document & { startViewTransition?: (update: () => void) => Transition };
 
 type Origin = Element | { x: number; y: number } | null;
 
@@ -14,7 +14,7 @@ type Origin = Element | { x: number; y: number } | null;
  *
  *   <button onClick={(e) => revealTheme(e.currentTarget, toggleTheme)}>…</button>
  */
-export function revealTheme(origin: Origin, apply: () => void, duration = 750) {
+export function revealTheme(origin: Origin, apply: () => void, duration = 700) {
   const doc = document as DocWithTransitions;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!doc.startViewTransition || reduce) {
@@ -38,10 +38,10 @@ export function revealTheme(origin: Origin, apply: () => void, duration = 750) {
   const root = document.documentElement;
   root.classList.add('theme-switching'); // stops the page's own color transitions from fighting the snapshot
 
-  // The browser waits for this promise before it takes the "after" picture, so the theme has certainly been applied.
-  const transition = doc.startViewTransition(async () => {
+  // flushSync applies the theme (state and effects) right now, so the "after" picture is taken straight away.
+  // Do not wait for a frame in here: the page does not paint while this callback runs, so that wait shows up as a freeze.
+  const transition = doc.startViewTransition(() => {
     flushSync(apply);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
   });
 
   transition.ready
