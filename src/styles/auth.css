@@ -325,34 +325,102 @@
   outline-offset: 3px;
 }
 
-/* ---------- Mobile: no band, just the active panel ---------- */
+/* ---------- Phones: same band animation, tighter geometry ----------
+   Form gets 58% of the card, the band 42%, skew is gentler. */
 @media (max-width: 760px) {
+  .authx-wrap {
+    padding: 14px;
+  }
   .authx {
-    grid-template-columns: 1fr;
-    min-height: 0;
-    border-top: 6px solid var(--auth-deep);
+    min-height: 560px;
+    border-radius: 22px;
   }
-  .authx__band,
-  .authx__msg {
-    display: none;
+
+  /* Band: -20%..42% when on the start side, 58%..120% when on the end side */
+  .authx__band {
+    inset-inline-start: -20%;
+    width: 62%;
+    transform: translateX(0) skewX(calc(var(--d) * 6deg));
   }
+  .authx[data-cover='end'] .authx__band {
+    transform: translateX(calc(var(--d) * 125.8%)) skewX(calc(var(--d) * 6deg));
+  }
+
+  /* Panels and messages stop using the two grid columns and just take a width */
   .authx__panel,
-  .authx__panel--login,
+  .authx__msg {
+    grid-column: 1 / -1;
+  }
+  .authx__panel {
+    width: 58%;
+    padding: 28px 14px;
+  }
+  .authx__panel--login {
+    justify-self: start;
+    padding-inline-end: 34px;
+  }
   .authx__panel--register,
   .authx__panel--other {
-    grid-column: 1;
-    padding: 32px 24px;
-    display: none;
+    justify-self: end;
+    padding-inline-start: 34px;
   }
-  .authx__panel.is-on {
-    display: flex;
-    transition: none;
-    animation: authx-in 0.35s ease;
+  .authx__msg {
+    width: 42%;
+    gap: 10px;
+    padding: 28px 12px;
   }
-}
-@keyframes authx-in {
-  from {
-    opacity: 0;
+  .authx__msg--login {
+    justify-self: end;
+    padding-inline-start: 30px;
+  }
+  .authx__msg--register,
+  .authx__msg--other {
+    justify-self: start;
+    padding-inline-end: 30px;
+  }
+
+  .authx__msg h2 {
+    font-size: 1.35rem;
+  }
+  .authx__msg p {
+    font-size: 0.74rem;
+    line-height: 1.6;
+  }
+  .authx__brand {
+    font-size: 0.68rem;
+  }
+
+  .authx__head {
+    margin-bottom: 10px;
+  }
+  .authx__head h1 {
+    font-size: 1.05rem;
+  }
+  .authx__head p {
+    font-size: 0.78rem;
+  }
+  .authx__field {
+    margin-top: 14px;
+  }
+  .authx__field label {
+    font-size: 0.72rem;
+  }
+  .authx__control input {
+    font-size: 16px; /* stops iOS from zooming on focus */
+    padding: 8px 0;
+  }
+  .authx__btn {
+    margin-top: 16px;
+    padding: 11px 12px;
+    font-size: 0.88rem;
+  }
+  .authx__link,
+  .authx__switch {
+    font-size: 0.76rem;
+  }
+  .authx__error,
+  .authx__note {
+    font-size: 0.76rem;
   }
 }
 
