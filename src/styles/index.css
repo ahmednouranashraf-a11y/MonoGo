@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-
 @import './base.css';
 @import './layout.css';
 @import './home.css';
@@ -10,3 +9,4 @@
 @import './scene.css';
 @import './responsive.css';
 @import './theme.css';
+@import './auth.css';
