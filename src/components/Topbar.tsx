@@ -5,6 +5,7 @@ import { navLabelsEn } from '../i18n/dictionary';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useTheme } from '../hooks/useTheme';
 import { formatTime } from '../lib/format';
+import { revealTheme } from '../lib/themeReveal';
 import { nav, type Page } from '../navigation';
 import Icon from './Icon';
 import WeatherBadge from './WeatherBadge';
@@ -174,7 +175,7 @@ export default function Topbar({ page, now, menuOpen, onToggleMenu, onGo, onLogi
             <button
               type="button"
               className="lang-toggle theme-toggle"
-              onClick={toggleTheme}
+              onClick={(e) => revealTheme(e.currentTarget, toggleTheme)}
               aria-label={themeLabel}
               title={themeLabel}
             >
