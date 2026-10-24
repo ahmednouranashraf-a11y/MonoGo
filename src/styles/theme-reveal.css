@@ -1,0 +1,20 @@
+/* Circular theme reveal (see lib/themeReveal.ts).
+   The browser's default cross-fade is switched off: the new theme is shown through a growing circle instead. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* While the switch runs, the page's own color transitions must not run too. */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
