@@ -12,19 +12,31 @@ function readTheme(): Theme {
   }
 }
 
+/** Puts the theme on <html> and remembers it. Safe to call outside React. */
+function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme;
+  try {
+    localStorage.setItem(STORAGE_KEY, theme);
+  } catch {
+    // ignore
+  }
+}
+
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(readTheme);
 
+  // First paint and any other change of `theme`.
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    try {
-      localStorage.setItem(STORAGE_KEY, theme);
-    } catch {
-      // ignore
-    }
+    applyTheme(theme);
   }, [theme]);
 
-  const toggle = useCallback(() => setTheme((t) => (t === 'dark' ? 'light' : 'dark')), []);
+  // The attribute is changed right here, not in an effect, so the circle reveal
+  // (revealTheme) takes its "after" picture of the new theme straight away.
+  const toggle = useCallback(() => {
+    const next: Theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    setTheme(next);
+  }, []);
 
   return { theme, toggle };
 }
