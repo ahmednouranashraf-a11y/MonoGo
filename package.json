@@ -12,10 +12,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
+    "framer-motion": "^14.6.0",
     "jsqr": "^1.4.0",
+    "lucide-react": "^1.61.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
