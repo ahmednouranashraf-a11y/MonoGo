@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 import { num } from '../lib/format';
 import { supabase } from '../lib/supabase';
 import '../styles/analytics.css';
 import '../styles/analytics-v2.css';
+import { BarsChart, TrendChart, type BarItem, type ChartPoint } from './AnalyticsCharts';
 import { getStationName } from './StationPicker';
 
 // ---------- Types (what the SQL functions return) ----------
@@ -156,14 +157,6 @@ const WEEKDAYS: { ar: string; en: string }[] = [
 
 // ---------- Small helpers ----------
 
-const niceCeil = (max: number) => {
-  const pow = 10 ** Math.floor(Math.log10(Math.max(max, 1)));
-  const n = max / pow;
-  // finer steps than 1 / 2 / 5 / 10, so a peak of 2,440 gets a 2,500 axis instead of 5,000
-  const nice = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((step) => n <= step) ?? 10;
-  return nice * pow;
-};
-
 const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : 0);
 
 /** The arguments every analytics function takes, built from the filter state. */
@@ -223,199 +216,6 @@ function Sparkline({ values }: { values: number[] }) {
   return (
     <svg className="an-spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
       <polyline points={pts.join(' ')} fill="none" className="an-spark-line" vectorEffect="non-scaling-stroke" />
-    </svg>
-  );
-}
-
-type ChartPoint = { label: string; full: string; value: number; prev?: number };
-
-/** The main zigzag line chart: current period, dashed previous period, peak marker, hover tooltip. */
-function LineChart({
-  points,
-  format,
-  locale,
-  isAr,
-}: {
-  points: ChartPoint[];
-  format: (n: number) => string;
-  locale: string;
-  isAr: boolean;
-}) {
-  const [hover, setHover] = useState<number | null>(null);
-  const box = useRef<HTMLDivElement>(null);
-
-  const W = 720;
-  const H = 270;
-  const padL = 52;
-  const padR = 14;
-  const padT = 18;
-  const padB = 30;
-  const innerW = W - padL - padR;
-  const innerH = H - padT - padB;
-  const n = points.length;
-
-  if (n === 0) return <p className="an-empty">{isAr ? 'مفيش بيانات في الفترة دي.' : 'No data in this period.'}</p>;
-
-  const hasPrev = points.some((p) => p.prev !== undefined);
-  const max = niceCeil(Math.max(1, ...points.map((p) => Math.max(p.value, p.prev ?? 0))));
-  const x = (i: number) => (n <= 1 ? padL + innerW / 2 : padL + (i * innerW) / (n - 1));
-  const y = (v: number) => padT + innerH - (v / max) * innerH;
-  const base = padT + innerH;
-
-  const path = (get: (p: ChartPoint) => number) =>
-    points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(get(p)).toFixed(1)}`).join(' ');
-
-  const line = path((p) => p.value);
-  const prevLine = hasPrev ? path((p) => p.prev ?? 0) : '';
-  const area = `${line} L${x(n - 1).toFixed(1)},${base} L${x(0).toFixed(1)},${base} Z`;
-
-  let peak = 0;
-  points.forEach((p, i) => {
-    if (p.value > points[peak].value) peak = i;
-  });
-
-  const step = Math.max(1, Math.ceil(n / 8));
-  const ticks = [0, 0.25, 0.5, 0.75, 1];
-
-  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const rect = box.current?.getBoundingClientRect();
-    if (!rect || rect.width === 0) return;
-    const px = ((e.clientX - rect.left) / rect.width) * W;
-    const idx = n <= 1 ? 0 : Math.round(((px - padL) / innerW) * (n - 1));
-    setHover(Math.max(0, Math.min(n - 1, idx)));
-  };
-
-  const hp = hover !== null ? points[hover] : null;
-  const xPct = hover !== null ? (x(hover) / W) * 100 : 0;
-  const shift = xPct < 18 ? '0%' : xPct > 82 ? '-100%' : '-50%';
-  const change = hp && hp.prev !== undefined && hp.prev > 0 ? ((hp.value - hp.prev) / hp.prev) * 100 : null;
-
-  return (
-    <div
-      className="an-line-wrap"
-      ref={box}
-      onPointerMove={onMove}
-      onPointerLeave={() => setHover(null)}
-      onPointerDown={onMove}
-    >
-      <svg className="an-line-svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={isAr ? 'رسم خطي' : 'Line chart'}>
-        <defs>
-          <linearGradient id="an-area-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" className="an-area-top" />
-            <stop offset="100%" className="an-area-bottom" />
-          </linearGradient>
-        </defs>
-
-        {ticks.map((tk) => {
-          const yy = padT + innerH - tk * innerH;
-          return (
-            <g key={tk}>
-              <line x1={padL} x2={W - padR} y1={yy} y2={yy} className="an-grid" />
-              <text x={padL - 8} y={yy + 4} textAnchor="end" className="an-axis">
-                {num(Math.round(max * tk), locale)}
-              </text>
-            </g>
-          );
-        })}
-
-        {points.map((p, i) =>
-          i % step === 0 ? (
-            <text key={i} x={x(i)} y={H - 8} textAnchor="middle" className="an-axis">
-              {p.label}
-            </text>
-          ) : null,
-        )}
-
-        <path d={area} fill="url(#an-area-grad)" />
-        {hasPrev && <path d={prevLine} className="an-line-prev" fill="none" />}
-        <path d={line} className="an-line-main" fill="none" />
-
-        {n <= 60 &&
-          points.map((p, i) => (
-            <circle key={i} cx={x(i)} cy={y(p.value)} r={i === peak ? 5 : 2.6} className={i === peak ? 'an-pt-peak' : 'an-pt'} />
-          ))}
-
-        {points[peak].value > 0 && (
-          <text x={x(peak)} y={Math.max(12, y(points[peak].value) - 10)} textAnchor="middle" className="an-peak-label">
-            {format(points[peak].value)}
-          </text>
-        )}
-
-        {hover !== null && (
-          <g>
-            <line x1={x(hover)} x2={x(hover)} y1={padT} y2={base} className="an-guide" />
-            <circle cx={x(hover)} cy={y(points[hover].value)} r={5.5} className="an-pt-hover" />
-          </g>
-        )}
-      </svg>
-
-      {hp && (
-        <div className="an-tip" style={{ left: `${xPct}%`, transform: `translateX(${shift})` }}>
-          <b>{hp.full}</b>
-          <span>{format(hp.value)}</span>
-          {hp.prev !== undefined && (
-            <small>
-              {isAr ? 'الفترة السابقة' : 'Previous'}: {format(hp.prev)}
-              {change !== null && ` (${change >= 0 ? '▲' : '▼'} ${num(Number(Math.abs(change).toFixed(1)), locale)}%)`}
-            </small>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-type BarItem = { label: string; value: number; title: string; highlight?: boolean };
-
-/** Simple vertical bar chart drawn with SVG. */
-function Bars({ items, locale, labelEvery = 1 }: { items: BarItem[]; locale: string; labelEvery?: number }) {
-  const W = 640;
-  const H = 220;
-  const padL = 40;
-  const padR = 8;
-  const padT = 10;
-  const padB = 28;
-  const max = niceCeil(Math.max(1, ...items.map((i) => i.value)));
-  const bw = (W - padL - padR) / items.length;
-  const innerH = H - padT - padB;
-  const ticks = [0, 0.25, 0.5, 0.75, 1];
-
-  return (
-    <svg className="an-svg" viewBox={`0 0 ${W} ${H}`} role="img">
-      {ticks.map((t) => {
-        const yy = padT + innerH - t * innerH;
-        return (
-          <g key={t}>
-            <line x1={padL} x2={W - padR} y1={yy} y2={yy} className="an-grid" />
-            <text x={padL - 6} y={yy + 4} textAnchor="end" className="an-axis">
-              {num(Math.round(max * t), locale)}
-            </text>
-          </g>
-        );
-      })}
-      {items.map((item, i) => {
-        const h = (item.value / max) * innerH;
-        const xx = padL + i * bw + bw * 0.14;
-        return (
-          <g key={i}>
-            <rect
-              x={xx}
-              y={padT + innerH - h}
-              width={bw * 0.72}
-              height={Math.max(h, item.value > 0 ? 1 : 0)}
-              rx={3}
-              className={item.highlight ? 'an-bar peak' : 'an-bar'}
-            >
-              <title>{item.title}</title>
-            </rect>
-            {i % labelEvery === 0 && (
-              <text x={xx + bw * 0.36} y={H - 8} textAnchor="middle" className="an-axis">
-                {item.label}
-              </text>
-            )}
-          </g>
-        );
-      })}
     </svg>
   );
 }
@@ -971,7 +771,7 @@ export default function AnalyticsPanel() {
             </div>
           </div>
         </div>
-        <LineChart points={chartPoints} format={format} locale={locale} isAr={isAr} />
+        <TrendChart points={chartPoints} format={format} locale={locale} isAr={isAr} />
       </div>
 
       <div className="an-grid-2">
@@ -1020,16 +820,12 @@ export default function AnalyticsPanel() {
               {tx('أعلى ساعة:', 'Busiest hour:')} <strong>{num(peakHour.hour, locale)}:00</strong>
             </p>
           )}
-          <div className="an-chart">
-            <Bars items={hourItems} locale={locale} labelEvery={3} />
-          </div>
+          <BarsChart items={hourItems} locale={locale} labelEvery={3} />
         </div>
 
         <div className="an-card">
           <h3>{tx('حسب أيام الأسبوع', 'By day of week')}</h3>
-          <div className="an-chart">
-            <Bars items={weekItems} locale={locale} />
-          </div>
+          <BarsChart items={weekItems} locale={locale} />
         </div>
       </div>
 
